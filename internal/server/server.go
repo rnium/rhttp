@@ -16,7 +16,7 @@ func (s *Server) Close() {
 }
 
 func (s *Server) handleConn(conn io.ReadWriteCloser) {
-
+	defer conn.Close()
 }
 
 func (s *Server) acceptConnections() {

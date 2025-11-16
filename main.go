@@ -12,7 +12,7 @@ import (
 
 
 
-const PORT uint16 = 8980
+const PORT uint16 = 8000
 
 
 func main() {
