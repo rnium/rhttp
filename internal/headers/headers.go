@@ -22,7 +22,7 @@ func validateToken(token string) error {
 		case c >= 'a' && c <= 'z':
 		case c >= 'A' && c <= 'Z':
 		case c >= '0' && c <= '9':
-		case strings.ContainsRune("!#$%&'*+-.^_`|~", c):
+		case strings.ContainsRune("!#$%&'*+-.^_`|~", c):		// RFC 9110 #5.6.2
 		default:
 			return ErrInvalidToken
 		}
@@ -38,7 +38,7 @@ func (h *Headers) Set(name, value string) error {
 	}
 	name_lower := strings.ToLower(name)
 	if prev_val, exists := h.headers[name_lower]; exists {
-		value = strings.Join([]string{prev_val, value}, ",")
+		value = strings.Join([]string{prev_val, value}, ", ") // RFC 9110 #5.3
 	}
 	h.headers[name_lower] = value
 	return nil

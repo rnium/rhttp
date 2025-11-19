@@ -32,7 +32,7 @@ func TestHeaders(t *testing.T) {
 	h.Set("foo", "bar")
 	h.Set("foo", "baz")
 	val, _ = h.Get("foo")
-	assert.Equal(t, val, "bar,baz")
+	assert.Equal(t, val, "bar, baz")
 	// replace
 	_, new := h.Replace("foo", "abc")
 	assert.False(t, new)

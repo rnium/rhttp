@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
+
+	"github.com/rnium/rhttp/internal/headers"
 )
 
 type ParserState int8
@@ -12,11 +15,13 @@ const SEPARATOR = "\r\n"
 
 const (
 	parserInit ParserState = iota
+	parserHeaders
 	parserDone
 	parserError
 )
 
 var ErrMalformedRequestLine = fmt.Errorf("malformed request line")
+var ErrMalformedFieldLine = fmt.Errorf("malformed field line")
 
 type RequestLine struct {
 	Method  string
@@ -26,6 +31,7 @@ type RequestLine struct {
 
 type Request struct {
 	RequestLine *RequestLine
+	Headers *headers.Headers
 	state       ParserState
 }
 
@@ -33,6 +39,7 @@ func newRequest() *Request {
 	return &Request{
 		state:       parserInit,
 		RequestLine: &RequestLine{},
+		Headers: headers.NewHeaders(),
 	}
 }
 
@@ -49,7 +56,7 @@ func (rl *RequestLine) parseRequestLine(data []byte) (int, error) {
 	rl.Method = string(elements_data[0])
 	rl.Target = string(elements_data[1])
 	rl.Version = string(elements_data[2])
-	return len(data[:sepIdx]), nil
+	return sepIdx + len(sep), nil
 }
 
 func (r *Request) done() bool {
@@ -59,11 +66,13 @@ func (r *Request) done() bool {
 func (r *Request) parse(data []byte) (int, error) {
 	read := 0
 	var err error
-dance:
+	sep := []byte(SEPARATOR)
+outer:
 	for {
+		currentData := data[read:]
 		switch r.state {
 		case parserInit:
-			n, err := r.RequestLine.parseRequestLine(data[read:])
+			n, err := r.RequestLine.parseRequestLine(currentData)
 			if err != nil {
 				r.state = parserError
 			}
@@ -72,8 +81,33 @@ dance:
 			}
 			read += n
 			r.state++
+		case parserHeaders:
+			sepIdx := bytes.Index(currentData, sep)
+			if sepIdx == 0 {
+				read += len(sep)
+				r.state++
+				continue
+			} else if sepIdx == -1 {
+				break outer
+			}
+			field_line_elems := bytes.Split(currentData[:sepIdx], []byte(":"))
+			if len(field_line_elems) != 2 {
+				err = ErrMalformedFieldLine
+				r.state = parserError
+				continue
+			}
+			field_name, field_val := string(field_line_elems[0]), string(field_line_elems[1])
+			err = r.Headers.Set(
+				strings.TrimSpace(field_name),
+				strings.TrimLeft(field_val, " "),
+			)
+			if err != nil {
+				r.state = parserError
+			}
+			read += sepIdx + len(sep)
+
 		case parserDone:
-			break dance // 🕺
+			break outer
 		case parserError:
 			return 0, err
 		}
