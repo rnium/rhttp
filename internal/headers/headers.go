@@ -8,6 +8,7 @@ import (
 var ErrInvalidToken = fmt.Errorf("token contains invalid characters")
 var ErrEmptyToken = fmt.Errorf("token is empty")
 
+
 type Headers struct {
 	headers map[string]string
 }
@@ -47,6 +48,29 @@ func (h *Headers) Get(name string) (string, bool) {
 	val, ok := h.headers[strings.ToLower(name)]
 	return val, ok
 }
+
+func (h *Headers) Replace(name, newValue string) (err error, new bool) {
+	name_lower := strings.ToLower(name)	
+	if _, exists := h.headers[name_lower]; !exists {
+		err = h.Set(name_lower, newValue)
+		return err, true
+	}
+	h.headers[name_lower] = newValue
+	return nil, false
+}
+
+
+func (h *Headers) Remove(name string) {
+	delete(h.headers, strings.ToLower(name))
+}
+
+func (h *Headers) ForEach(f func (name, value string)) {
+	for k, v := range h.headers {
+		f(k, v)
+	}
+}
+
+
 
 func NewHeaders() *Headers {
 	return &Headers{
