@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/rnium/rhttp/internal/headers"
@@ -16,12 +17,14 @@ const SEPARATOR = "\r\n"
 const (
 	parserInit ParserState = iota
 	parserHeaders
+	parserBody
 	parserDone
 	parserError
 )
 
 var ErrMalformedRequestLine = fmt.Errorf("malformed request line")
 var ErrMalformedFieldLine = fmt.Errorf("malformed field line")
+var ErrMalformedFieldValue = fmt.Errorf("malformed field value")
 
 type RequestLine struct {
 	Method  string
@@ -30,16 +33,19 @@ type RequestLine struct {
 }
 
 type Request struct {
-	RequestLine *RequestLine
-	Headers *headers.Headers
-	state       ParserState
+	RequestLine   *RequestLine
+	Headers       *headers.Headers
+	Body          []byte
+	state         ParserState
+	contentLength int
 }
 
 func newRequest() *Request {
 	return &Request{
 		state:       parserInit,
 		RequestLine: &RequestLine{},
-		Headers: headers.NewHeaders(),
+		Headers:     headers.NewHeaders(),
+		Body:        nil,
 	}
 }
 
@@ -70,6 +76,9 @@ func (r *Request) parse(data []byte) (int, error) {
 outer:
 	for {
 		currentData := data[read:]
+		if len(currentData) == 0 {
+			break
+		}
 		switch r.state {
 		case parserInit:
 			n, err := r.RequestLine.parseRequestLine(currentData)
@@ -85,7 +94,16 @@ outer:
 			sepIdx := bytes.Index(currentData, sep)
 			if sepIdx == 0 {
 				read += len(sep)
-				r.state++
+				contentLengthRaw, exists := r.Headers.Get("content-length")
+				if exists {
+					r.state++
+					r.contentLength, err = strconv.Atoi(contentLengthRaw)
+					if err != nil {
+						r.state = parserError
+					}
+				} else {
+					r.state = parserDone
+				}
 				continue
 			} else if sepIdx == -1 {
 				break outer
@@ -105,7 +123,15 @@ outer:
 				r.state = parserError
 			}
 			read += sepIdx + len(sep)
-
+		case parserBody:
+			remaining := r.contentLength - len(r.Body)
+			if remaining == 0 {
+				r.state = parserDone
+				continue
+			}
+			endIdx := min(len(currentData), remaining)			
+			r.Body = append(r.Body, currentData[:endIdx]...)
+			read += endIdx			
 		case parserDone:
 			break outer
 		case parserError:

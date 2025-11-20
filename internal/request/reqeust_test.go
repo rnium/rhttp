@@ -29,14 +29,14 @@ func (cr *chunkedReader) Read(p []byte) (int, error) {
 func newChunkedReader(data []byte) *chunkedReader {
 	return &chunkedReader{
 		data: data,
-		bytesPerRead: 2,
+		bytesPerRead: 1,
 		pos: 0,
 	}
 }
 
 
 func TestRequest(t *testing.T) {
-	cr := newChunkedReader([]byte("GET hello/ HTTP1.1\r\ncontent-length: 43\r\naccept: text/plain\r\naccept: application/json\r\n\r\n"))
+	cr := newChunkedReader([]byte("GET hello/ HTTP1.1\r\ncontent-length: 5\r\naccept: text/plain\r\naccept: application/json\r\n\r\nHello\r\n"))
 	rq, err := GetRequest(cr)
 	require.NoError(t, err)
 	assert.Equal(t, rq.RequestLine.Method, "GET")
@@ -44,8 +44,9 @@ func TestRequest(t *testing.T) {
 	assert.Equal(t, rq.RequestLine.Version, "HTTP1.1")
 	clength, _ := rq.Headers.Get("content-length")
 	accept, _ := rq.Headers.Get("accept")
-	assert.Equal(t, clength, "43")
+	assert.Equal(t, clength, "5")
 	assert.Equal(t, accept, "text/plain, application/json")
 	_, ok := rq.Headers.Get("nonexistant")
 	assert.False(t, ok)
+	assert.Equal(t, string(rq.Body), "Hello")
 }
