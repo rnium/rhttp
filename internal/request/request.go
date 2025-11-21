@@ -108,7 +108,7 @@ outer:
 			} else if sepIdx == -1 {
 				break outer
 			}
-			field_line_elems := bytes.Split(currentData[:sepIdx], []byte(":"))
+			field_line_elems := bytes.SplitN(currentData[:sepIdx], []byte(":"), 2)
 			if len(field_line_elems) != 2 {
 				err = ErrMalformedFieldLine
 				r.state = parserError

@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"net"
+
+	"github.com/rnium/rhttp/internal/request"
 )
 
 type Server struct{
@@ -17,6 +19,16 @@ func (s *Server) Close() {
 
 func (s *Server) handleConn(conn io.ReadWriteCloser) {
 	defer conn.Close()
+	req, err := request.GetRequest(conn)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Method: %s, Target: %s, Version: %s\n", req.RequestLine.Method, req.RequestLine.Target, req.RequestLine.Version)
+	req.Headers.ForEach(func(name, value string) {
+		fmt.Printf("%s: %s\n", name, value)
+	})
+	fmt.Println(string(req.Body))
 }
 
 func (s *Server) acceptConnections() {
