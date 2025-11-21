@@ -6,7 +6,9 @@ import (
 	"log"
 	"net"
 
+	"github.com/rnium/rhttp/internal/headers"
 	"github.com/rnium/rhttp/internal/request"
+	"github.com/rnium/rhttp/internal/response"
 )
 
 type Server struct{
@@ -23,12 +25,19 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 	if err != nil {
 		fmt.Println(err)
 		return
+	}	
+	res := response.NewResponse(req)
+	headers := headers.NewHeaders()
+	_ = headers.Set("server", "rhttp")
+	_ = headers.Set("content-type", "application/json")
+	_, err = res.WriteStatusLine(conn, response.StatusForbidden)
+	if err != nil {
+		fmt.Println(err)
 	}
-	fmt.Printf("Method: %s, Target: %s, Version: %s\n", req.RequestLine.Method, req.RequestLine.Target, req.RequestLine.Version)
-	req.Headers.ForEach(func(name, value string) {
-		fmt.Printf("%s: %s\n", name, value)
-	})
-	fmt.Println(string(req.Body))
+	_, err = res.WriteResponseHeaders(conn, headers)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func (s *Server) acceptConnections() {
