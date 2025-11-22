@@ -77,3 +77,17 @@ func NewHeaders() *Headers {
 		headers: make(map[string]string),
 	}
 }
+
+func GetDefaultResponseHeaders(contentLength int) *Headers {
+	headers := NewHeaders()
+	defaults := map[string]string{
+		"content-length": fmt.Sprintf("%d", contentLength),
+		"content-type": "text/plain",
+		"server": "rhttp",
+		"connection": "closed",
+	}
+	for name, value := range defaults {
+		_ = headers.Set(name, value)
+	}
+	return headers
+}

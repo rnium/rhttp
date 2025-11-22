@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net"
 
-	"github.com/rnium/rhttp/internal/headers"
 	"github.com/rnium/rhttp/internal/request"
 	"github.com/rnium/rhttp/internal/response"
 )
@@ -25,19 +25,16 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 	if err != nil {
 		fmt.Println(err)
 		return
-	}	
-	res := response.NewResponse(req)
-	headers := headers.NewHeaders()
-	_ = headers.Set("server", "rhttp")
-	_ = headers.Set("content-type", "application/json")
-	_, err = res.WriteStatusLine(conn, response.StatusForbidden)
+	}
+	data := []byte("hello world")
+	res := response.NewResponse(response.StatusBadRequest, data, nil)
+	n, err := res.WriteResponse(conn, req)
 	if err != nil {
 		fmt.Println(err)
 	}
-	_, err = res.WriteResponseHeaders(conn, headers)
-	if err != nil {
-		fmt.Println(err)
-	}
+	slog.Info(
+		fmt.Sprintf("Written %d bytes\n", n),
+	)
 }
 
 func (s *Server) acceptConnections() {
@@ -52,6 +49,7 @@ func (s *Server) acceptConnections() {
 
 
 func Serve(port uint16) *Server {
+	fmt.Println("Starting Server...")
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("Cannot initiate listener on port %d\n", port)
