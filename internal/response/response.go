@@ -49,7 +49,6 @@ func writeHeaders(conn io.Writer, headers *headers.Headers) (int, error) {
 }
 
 func writeBody(conn io.Writer, p []byte) (int, error) {
-	p = append(p, []byte(CRLF)...)
 	return conn.Write(p)
 }
 
