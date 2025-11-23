@@ -29,8 +29,8 @@ func TestHeaders(t *testing.T) {
 	err = h.Set("content length", "123")
 	require.ErrorIs(t, err, ErrInvalidToken)
 	// multi value
-	h.Set("foo", "bar")
-	h.Set("foo", "baz")
+	_ = h.Set("foo", "bar")
+	_ = h.Set("foo", "baz")
 	val, _ = h.Get("foo")
 	assert.Equal(t, val, "bar, baz")
 	// replace
@@ -63,7 +63,7 @@ func TestHeadersForEach(t *testing.T) {
 	var expected_output string
 	for _, d := range headers_test_data {
 		name, val := d[0], d[1]
-		h.Set(name, val)
+		_ = h.Set(name, val)
 		expected_output += formatter(name, val)
 	}
 	actual_op := ""

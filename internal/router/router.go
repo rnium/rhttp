@@ -46,12 +46,13 @@ func (r *Router) getView(target string) *View {
 	return view
 }
 
-func (r *Router) GetHandler(target, method string) Handler {
-	view := r.getView(target)
+func (r *Router) GetHandler(request *request.Request) Handler {
+	rl := request.RequestLine
+	view := r.getView(rl.Target)
 	if view == nil {
 		return NewErrorHandler(response.StatusNotFound)
 	}
-	if !slices.Contains(view.methods, method) {
+	if !slices.Contains(view.methods, rl.Method) {
 		return NewErrorHandler(response.StatusMethodNotAllowed)
 	}
 	return view.handler

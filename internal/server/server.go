@@ -8,11 +8,12 @@ import (
 	"net"
 
 	"github.com/rnium/rhttp/internal/request"
-	"github.com/rnium/rhttp/internal/response"
+	"github.com/rnium/rhttp/internal/router"
 )
 
-type Server struct{
+type Server struct {
 	listener net.Listener
+	router   *router.Router
 }
 
 func (s *Server) Close() {
@@ -26,14 +27,20 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 		fmt.Println(err)
 		return
 	}
-	data := []byte("hello world")
-	res := response.NewResponse(response.StatusBadRequest, data, nil)
-	n, err := res.WriteResponse(conn, req)
+	handler := s.router.GetHandler(req)
+	res := handler(req)
+	_, err = res.WriteResponse(conn, req)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	slog.Info(
-		fmt.Sprintf("Written %d bytes\n", n),
+		fmt.Sprintf(
+			"%d %s %s\n",
+			res.StatusCode,
+			req.RequestLine.Method,
+			req.RequestLine.Target,
+		),
 	)
 }
 
@@ -47,8 +54,7 @@ func (s *Server) acceptConnections() {
 	}
 }
 
-
-func Serve(port uint16) *Server {
+func Serve(port uint16, router *router.Router) *Server {
 	fmt.Println("Starting Server...")
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -56,6 +62,7 @@ func Serve(port uint16) *Server {
 	}
 	server := &Server{
 		listener: listener,
+		router:   router,
 	}
 	go server.acceptConnections()
 	fmt.Printf("Listening for tcp connections on port %d\n", port)

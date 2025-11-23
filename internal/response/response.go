@@ -14,27 +14,27 @@ var ErrWriteFailed = fmt.Errorf("error while writing to connection")
 const CRLF = "\r\n"
 
 type Response struct {
-	statusCode int
-	headers    *headers.Headers
-	body       []byte
+	StatusCode int
+	Headers    *headers.Headers
+	Body       []byte
 	finished   bool
 }
 
-func NewResponse(statusCode int, body []byte, headers *headers.Headers) *Response {
+func NewResponse(StatusCode int, body []byte, headers *headers.Headers) *Response {
 	return &Response{
-		statusCode: statusCode,
-		headers:    headers,
-		body:       body,
+		StatusCode: StatusCode,
+		Headers:    headers,
+		Body:       body,
 	}
 }
 
-func writeStatusLine(conn io.Writer, statusCode int, request *request.Request) (int, error) {
-	statusMsg, ok := statusMessage[statusCode]
+func writeStatusLine(conn io.Writer, StatusCode int, request *request.Request) (int, error) {
+	statusMsg, ok := statusMessage[StatusCode]
 	var statusLine string
 	if ok {
-		statusLine = fmt.Sprintf("%s %d %s%s", request.RequestLine.Version, statusCode, statusMsg, CRLF)
+		statusLine = fmt.Sprintf("%s %d %s%s", request.RequestLine.Version, StatusCode, statusMsg, CRLF)
 	} else {
-		statusLine = fmt.Sprintf("%s %d%s", request.RequestLine.Version, statusCode, CRLF)
+		statusLine = fmt.Sprintf("%s %d%s", request.RequestLine.Version, StatusCode, CRLF)
 	}
 	return conn.Write([]byte(statusLine))
 }
@@ -60,22 +60,22 @@ func (res *Response) WriteResponse(conn io.Writer, request *request.Request) (n 
 	if res.finished {
 		return 0, ErrResponseClosed
 	}
-	if res.headers == nil {
-		res.headers = headers.GetDefaultResponseHeaders(len(res.body))
+	if res.Headers == nil {
+		res.Headers = headers.GetDefaultResponseHeaders(len(res.Body))
 	} else {
-		_, _ = res.headers.Replace("content-length", fmt.Sprintf("%d", len(res.body)))
+		_, _ = res.Headers.Replace("content-length", fmt.Sprintf("%d", len(res.Body)))
 	}
-	n_statusline, err := writeStatusLine(conn, res.statusCode, request)
+	n_statusline, err := writeStatusLine(conn, res.StatusCode, request)
 	if err != nil {
 		return n, err
 	}
 	n += n_statusline
-	n_fieldline, err := writeHeaders(conn, res.headers)
+	n_fieldline, err := writeHeaders(conn, res.Headers)
 	if err != nil {
 		return n, err
 	}
 	n += n_fieldline
-	n_body, err := writeBody(conn, res.body)
+	n_body, err := writeBody(conn, res.Body)
 	if err != nil {
 		return n, err
 	}
