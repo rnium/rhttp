@@ -13,8 +13,7 @@ func healthCheck(r *request.Request) *response.Response {
 }
 
 func myBad(r *request.Request) *response.Response {
-	p := []byte("Sorry, My Bad")
-	return response.NewResponse(response.StatusBadGateway, p, nil)
+	panic("My Bad")
 }
 
 func methodChecker(r *request.Request) *response.Response {
