@@ -8,7 +8,6 @@ import (
 var ErrInvalidToken = fmt.Errorf("token contains invalid characters")
 var ErrEmptyToken = fmt.Errorf("token is empty")
 
-
 type Headers struct {
 	headers map[string]string
 }
@@ -17,19 +16,18 @@ func validateToken(token string) error {
 	if len(token) == 0 {
 		return ErrEmptyToken
 	}
-	for _, c := range token {		
+	for _, c := range token {
 		switch {
 		case c >= 'a' && c <= 'z':
 		case c >= 'A' && c <= 'Z':
 		case c >= '0' && c <= '9':
-		case strings.ContainsRune("!#$%&'*+-.^_`|~", c):		// RFC 9110 #5.6.2
+		case strings.ContainsRune("!#$%&'*+-.^_`|~", c): // RFC 9110 #5.6.2
 		default:
 			return ErrInvalidToken
 		}
 	}
 	return nil
 }
-
 
 func (h *Headers) Set(name, value string) error {
 	err := validateToken(name)
@@ -50,7 +48,7 @@ func (h *Headers) Get(name string) (string, bool) {
 }
 
 func (h *Headers) Replace(name, newValue string) (err error, new bool) {
-	name_lower := strings.ToLower(name)	
+	name_lower := strings.ToLower(name)
 	if _, exists := h.headers[name_lower]; !exists {
 		err = h.Set(name_lower, newValue)
 		return err, true
@@ -59,18 +57,19 @@ func (h *Headers) Replace(name, newValue string) (err error, new bool) {
 	return nil, false
 }
 
-
 func (h *Headers) Remove(name string) {
 	delete(h.headers, strings.ToLower(name))
 }
 
-func (h *Headers) ForEach(f func (name, value string)) {
+func (h *Headers) ForEach(f func(name, value string)) {
 	for k, v := range h.headers {
 		f(k, v)
 	}
 }
 
-
+func (h *Headers) Count() int {
+	return len(h.headers)
+}
 
 func NewHeaders() *Headers {
 	return &Headers{
@@ -78,13 +77,12 @@ func NewHeaders() *Headers {
 	}
 }
 
-func GetDefaultResponseHeaders(contentLength int) *Headers {
+func GetDefaultResponseHeaders() *Headers {
 	headers := NewHeaders()
 	defaults := map[string]string{
-		"content-length": fmt.Sprintf("%d", contentLength),
 		"content-type": "text/plain",
-		"server": "rhttp",
-		"connection": "closed",
+		"server":       "rhttp",
+		"connection":   "closed",
 	}
 	for name, value := range defaults {
 		_ = headers.Set(name, value)

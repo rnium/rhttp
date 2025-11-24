@@ -20,12 +20,24 @@ type Response struct {
 	finished   bool
 }
 
-func NewResponse(StatusCode int, body []byte, headers *headers.Headers) *Response {
-	return &Response{
+func NewResponse(StatusCode int, body []byte, extra_headers *headers.Headers) *Response {
+	headers := headers.GetDefaultResponseHeaders()
+	if extra_headers != nil {
+		extra_headers.ForEach(func(name, value string) {
+			if _, exists := headers.Get(name); exists {
+				_, _ = headers.Replace(name, value)
+			} else {
+				_ = headers.Set(name, value)
+			}
+		})
+	}
+	_ = headers.Set("content-length", fmt.Sprint(len(body)))
+	res := &Response{
 		StatusCode: StatusCode,
 		Headers:    headers,
 		Body:       body,
 	}
+	return res
 }
 
 func writeStatusLine(conn io.Writer, StatusCode int, request *request.Request) (int, error) {
@@ -54,17 +66,15 @@ func writeBody(conn io.Writer, p []byte) (int, error) {
 
 func (res *Response) WriteResponse(conn io.Writer, request *request.Request) (n int, err error) {
 	defer func() {
-		res.finished = true
+		if !res.finished {
+			res.finished = true
+		}
 	}()
-	
+
 	if res.finished {
 		return 0, ErrResponseClosed
 	}
-	if res.Headers == nil {
-		res.Headers = headers.GetDefaultResponseHeaders(len(res.Body))
-	} else {
-		_, _ = res.Headers.Replace("content-length", fmt.Sprintf("%d", len(res.Body)))
-	}
+
 	n_statusline, err := writeStatusLine(conn, res.StatusCode, request)
 	if err != nil {
 		return n, err

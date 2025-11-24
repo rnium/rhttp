@@ -3,13 +3,16 @@ package main
 import (
 	"fmt"
 
+	"github.com/rnium/rhttp/internal/headers"
 	"github.com/rnium/rhttp/internal/request"
 	"github.com/rnium/rhttp/internal/response"
 )
 
 func healthCheck(r *request.Request) *response.Response {
-	p := []byte("everything working fine")
-	return response.NewResponse(response.StatusOK, p, nil)
+	p := []byte("<h1>Everything working fine</h1>")
+	headers := headers.NewHeaders()
+	_ = headers.Set("content-type", "text/html")
+	return response.NewResponse(response.StatusOK, p, headers)
 }
 
 func myBad(r *request.Request) *response.Response {

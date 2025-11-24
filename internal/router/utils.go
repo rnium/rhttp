@@ -17,6 +17,6 @@ func validateTarget(target string) error {
 
 func NewErrorHandler(statusCode int) Handler {
 	return func(r *request.Request) *response.Response {
-		return response.NewResponse(statusCode, nil, nil)
+		return response.ErrorResponseHTML(statusCode)
 	}
 }
