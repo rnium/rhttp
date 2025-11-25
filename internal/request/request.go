@@ -26,6 +26,8 @@ var ErrMalformedRequestLine = fmt.Errorf("malformed request line")
 var ErrMalformedFieldLine = fmt.Errorf("malformed field line")
 var ErrMalformedFieldValue = fmt.Errorf("malformed field value")
 
+type Params map[string]string
+
 type RequestLine struct {
 	Method  string
 	Target  string
@@ -38,6 +40,7 @@ type Request struct {
 	Body          []byte
 	state         ParserState
 	contentLength int
+	params        Params
 }
 
 func newRequest() *Request {
@@ -46,6 +49,7 @@ func newRequest() *Request {
 		RequestLine: &RequestLine{},
 		Headers:     headers.NewHeaders(),
 		Body:        nil,
+		params:      make(Params),
 	}
 }
 
@@ -63,6 +67,15 @@ func (rl *RequestLine) parseRequestLine(data []byte) (int, error) {
 	rl.Target = string(elements_data[1])
 	rl.Version = string(elements_data[2])
 	return sepIdx + len(sep), nil
+}
+
+func (r *Request) SetParams(p Params) {
+	r.params = p
+}
+
+func (r *Request) Param(name string) (string, bool) {
+	value, ok := r.params[name]
+	return value, ok
 }
 
 func (r *Request) done() bool {
@@ -129,9 +142,9 @@ outer:
 				r.state = parserDone
 				continue
 			}
-			endIdx := min(len(currentData), remaining)			
+			endIdx := min(len(currentData), remaining)
 			r.Body = append(r.Body, currentData[:endIdx]...)
-			read += endIdx			
+			read += endIdx
 		case parserDone:
 			break outer
 		case parserError:

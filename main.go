@@ -17,13 +17,14 @@ const PORT uint16 = 8000
 
 func getRouter() *router.Router {
 	router := router.NewRouter()
-	router.Get("/health", healthCheck)
-	router.Get("/servererror", myBad)
-	router.Get("/method-check", methodChecker)
-	router.Post("/method-check", methodChecker)
-	router.Put("/method-check", methodChecker)
-	router.Patch("/method-check", methodChecker)
-	router.Delete("/method-check", methodChecker)
+	router.Get("/health", HealthCheck)
+	router.Get("/servererror", MyBad)
+	router.Get("/param/:pk/info", ParamChecker)
+	router.Get("/method-check", MethodChecker)
+	router.Post("/method-check", MethodChecker)
+	router.Put("/method-check", MethodChecker)
+	router.Patch("/method-check", MethodChecker)
+	router.Delete("/method-check", MethodChecker)
 	return router
 }
 

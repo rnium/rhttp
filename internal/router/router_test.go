@@ -15,10 +15,10 @@ func demoHandler(request *request.Request) *response.Response {
 
 func TestRouter(t *testing.T) {
 	router := NewRouter()
-	view := router.getView("/hello")
+	view, _ := router.getView("/hello")
 	assert.Nil(t, view)
 	router.Get("/hello", demoHandler)
-	view = router.getView("/hello")
+	view, _ = router.getView("/hello")
 	assert.NotNil(t, view)
 	assert.Equal(t, []string{MethodGet}, view.methods)
 	router.Post("/hello", demoHandler)

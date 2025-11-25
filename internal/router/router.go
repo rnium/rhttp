@@ -29,31 +29,33 @@ func NewView(handler Handler, methods ...string) *View {
 }
 
 type Router struct {
-	routeTable map[string]*View
+	rootNode *Node
 }
 
 func NewRouter() *Router {
 	return &Router{
-		routeTable: make(map[string]*View),
+		rootNode: newNode(""),
 	}
 }
 
-func (r *Router) getView(target string) *View {
-	view, found := r.routeTable[target]
-	if !found {
-		return nil
+func (r *Router) getView(target string) (*View, request.Params) {
+	node, params := r.findTrailerNode(target)
+	if node == nil || node.view == nil {
+		return nil, params
 	}
-	return view
+	
+	return node.view, params
 }
 
 func (r *Router) GetHandler(request *request.Request) Handler {
 	rl := request.RequestLine
-	view := r.getView(rl.Target)
+	view, params := r.getView(rl.Target)
+	request.SetParams(params)
 	if view == nil {
 		return NewErrorHandler(response.StatusNotFound)
 	}
 	if !slices.Contains(view.methods, rl.Method) {
-		return NewErrorHandler(response.StatusMethodNotAllowed)
+		return NewErrorHandler(response.StatusMethodNotAllowed) 
 	}
 	return view.handler
 }
@@ -63,10 +65,10 @@ func (r *Router) addView(target, method string, handler Handler) {
 	if err != nil {
 		panic(fmt.Errorf("Error while registering handler for target '%s'. %v", target, err))
 	}
-	view := r.getView(target)
+	view, _ := r.getView(target)
 	if view == nil {
-		view = NewView(handler, method)
-		r.routeTable[target] = view
+		node := r.insertUrl(target)
+		node.view = NewView(handler, method)
 	} else if !slices.Contains(view.methods, method) {
 		view.methods = append(view.methods, method)
 	}
