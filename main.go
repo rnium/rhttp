@@ -10,9 +10,6 @@ import (
 	"github.com/rnium/rhttp/internal/server"
 )
 
-
-
-
 const PORT uint16 = 8000
 
 func getRouter() *router.Router {
@@ -27,7 +24,6 @@ func getRouter() *router.Router {
 	router.Delete("/method-check", MethodChecker)
 	return router
 }
-
 
 func main() {
 	router := getRouter()

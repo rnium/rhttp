@@ -22,10 +22,6 @@ func newNode(name string) *Node {
 	}
 }
 
-func newParams() request.Params {
-	return make(request.Params)
-}
-
 func getUrlParts(url string) []string {
 	if url == "" {
 		return []string{}
@@ -41,6 +37,9 @@ func (r *Router) insertUrl(target_url string) *Node {
 	parts := getUrlParts(target_url)
 	curr := r.rootNode
 	for _, part := range parts {
+		if part == "" {
+			continue
+		}
 		if next_node, exists := curr.childNodes[part]; exists {
 			curr = next_node
 		} else {
@@ -68,9 +67,12 @@ func (r *Router) insertUrl(target_url string) *Node {
 // Find for the trailer node of an url
 func (r *Router) findTrailerNode(target_url string) (*Node, request.Params) {
 	parts := getUrlParts(target_url)
-	params := newParams()
+	params := request.NewParams()
 	curr := r.rootNode
 	for _, part := range parts {		
+		if part == "" {
+			continue
+		}
 		// First check the static parts
 		if node, exists := curr.childNodes[part]; exists {
 			curr = node

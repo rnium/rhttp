@@ -28,6 +28,10 @@ var ErrMalformedFieldValue = fmt.Errorf("malformed field value")
 
 type Params map[string]string
 
+func NewParams() Params {
+	return make(Params)
+}
+
 type RequestLine struct {
 	Method  string
 	Target  string
@@ -49,7 +53,6 @@ func newRequest() *Request {
 		RequestLine: &RequestLine{},
 		Headers:     headers.NewHeaders(),
 		Body:        nil,
-		params:      make(Params),
 	}
 }
 
