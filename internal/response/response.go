@@ -16,11 +16,23 @@ const CRLF = "\r\n"
 type Response struct {
 	StatusCode int
 	Headers    *headers.Headers
-	Body       []byte
+	body       []byte
+	reader     io.Reader // If reader is set response will be chunked
 	finished   bool
 }
 
 func NewResponse(StatusCode int, body []byte, extra_headers *headers.Headers) *Response {
+	headers := getResponseHeaders(extra_headers)
+	_ = headers.Set("content-length", fmt.Sprint(len(body)))
+	res := &Response{
+		StatusCode: StatusCode,
+		Headers:    headers,
+		body:       body,
+	}
+	return res
+}
+
+func getResponseHeaders(extra_headers *headers.Headers) *headers.Headers {
 	headers := headers.GetDefaultResponseHeaders()
 	if extra_headers != nil {
 		extra_headers.ForEach(func(name, value string) {
@@ -31,13 +43,7 @@ func NewResponse(StatusCode int, body []byte, extra_headers *headers.Headers) *R
 			}
 		})
 	}
-	_ = headers.Set("content-length", fmt.Sprint(len(body)))
-	res := &Response{
-		StatusCode: StatusCode,
-		Headers:    headers,
-		Body:       body,
-	}
-	return res
+	return headers
 }
 
 func writeStatusLine(conn io.Writer, StatusCode int, request *request.Request) (int, error) {
@@ -75,20 +81,33 @@ func (res *Response) WriteResponse(conn io.Writer, request *request.Request) (n 
 		return 0, ErrResponseClosed
 	}
 
+	// Write Status Line
 	n_statusline, err := writeStatusLine(conn, res.StatusCode, request)
 	if err != nil {
 		return n, err
 	}
 	n += n_statusline
+
+	// Write Headers
 	n_fieldline, err := writeHeaders(conn, res.Headers)
 	if err != nil {
 		return n, err
 	}
 	n += n_fieldline
-	n_body, err := writeBody(conn, res.Body)
-	if err != nil {
-		return n, err
+
+	// Write Body
+	if res.body != nil {
+		n_body, err := writeBody(conn, res.body)
+		if err != nil {
+			return n, err
+		}
+		n += n_body
+	} else if res.reader != nil {
+		n_body, err := res.writeChunkedBody(conn)
+		if err != nil {
+			return n, err
+		}
+		n += n_body
 	}
-	n += n_body
 	return
 }

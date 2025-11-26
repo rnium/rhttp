@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"net/http"
 
 	"github.com/rnium/rhttp/internal/headers"
 	"github.com/rnium/rhttp/internal/request"
@@ -19,14 +19,11 @@ func MyBad(r *request.Request) *response.Response {
 	panic("Oops.. My Bad")
 }
 
-func MethodChecker(r *request.Request) *response.Response {
-	p := fmt.Appendf(nil, "Successfull handled %s request from methodchecker endpoint", r.RequestLine.Method)
-	return response.NewResponse(response.StatusOK, p, nil)
-}
-
-func ParamChecker(r *request.Request) *response.Response {
-	p_name := "pk"
-	pk, _ := r.Param(p_name)
-	p := fmt.Appendf(nil, "Parameter '%s' is: %s", p_name, pk)
-	return response.NewResponse(response.StatusOK, p, nil)
+func HttpBinStream(r *request.Request) *response.Response {
+	n, _ := r.Param("n")
+	res, err := http.Get("https://httpbin.org/stream/" + n)
+	if err != nil {
+		panic(err)
+	}
+	return response.NewChunkedResponse(response.StatusOK, res.Body, nil)
 }

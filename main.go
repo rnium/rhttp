@@ -16,12 +16,7 @@ func getRouter() *router.Router {
 	router := router.NewRouter()
 	router.Get("/health", HealthCheck)
 	router.Get("/servererror", MyBad)
-	router.Get("/param/:pk/info", ParamChecker)
-	router.Get("/method-check", MethodChecker)
-	router.Post("/method-check", MethodChecker)
-	router.Put("/method-check", MethodChecker)
-	router.Patch("/method-check", MethodChecker)
-	router.Delete("/method-check", MethodChecker)
+	router.Get("/httpbin/stream/:n", HttpBinStream)
 	return router
 }
 
