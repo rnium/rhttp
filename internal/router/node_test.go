@@ -44,4 +44,8 @@ func TestFindTrailingNode(t *testing.T) {
 	node, params = router.findTrailerNode("/inventory/category/1/products/1")
 	assert.NotNil(t, node)
 	assert.Empty(t, params)	
+	
+	assert.Panics(t, func() {
+		router.insertUrl("/inventory/category/:cat_id_new/products/:prod_id")
+	})
 }

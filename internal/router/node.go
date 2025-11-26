@@ -15,8 +15,6 @@ type Node struct {
 	view       *View
 }
 
-
-
 func newNode(name string) *Node {
 	return &Node{
 		name:       name,
@@ -47,10 +45,15 @@ func (r *Router) insertUrl(target_url string) *Node {
 			curr = next_node
 		} else {
 			var node *Node
-			if strings.HasPrefix(part, ":") {
+			if after, ok := strings.CutPrefix(part, ":"); ok {
 				if curr.paramNode == nil {
-					node = newNode(strings.Trim(part, ":"))
+					node = newNode(after)
 					curr.paramNode = node
+				} else {
+					node = curr.paramNode
+					if node.name != after {
+						panic(fmt.Sprintf("conflict with parameterized node name. %s != %s", node.name, after))
+					}
 				}
 			} else {
 				node = newNode(part)
@@ -67,10 +70,7 @@ func (r *Router) findTrailerNode(target_url string) (*Node, request.Params) {
 	parts := getUrlParts(target_url)
 	params := newParams()
 	curr := r.rootNode
-	for _, part := range parts {
-		if curr.name == "products" && curr.paramNode != nil {
-			fmt.Println(curr.paramNode.name, part)
-		}
+	for _, part := range parts {		
 		// First check the static parts
 		if node, exists := curr.childNodes[part]; exists {
 			curr = node
