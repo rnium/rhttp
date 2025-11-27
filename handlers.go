@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/rnium/rhttp/internal/headers"
 	"github.com/rnium/rhttp/internal/request"
@@ -15,8 +16,9 @@ func HealthCheck(r *request.Request) *response.Response {
 	return response.NewResponse(response.StatusOK, p, headers)
 }
 
-func MyBad(r *request.Request) *response.Response {
-	panic("Oops.. My Bad")
+func Ping(r *request.Request) *response.Response {
+	p := []byte("Pong")
+	return response.NewResponse(response.StatusOK, p, nil)
 }
 
 func HttpBinStream(r *request.Request) *response.Response {
@@ -26,4 +28,14 @@ func HttpBinStream(r *request.Request) *response.Response {
 		panic(err)
 	}
 	return response.NewChunkedResponse(response.StatusOK, res.Body, nil)
+}
+
+func Index(r *request.Request) *response.Response {
+	f, err := os.Open("./templates/index.html")
+	if err != nil {
+		panic(err)
+	}
+	headers := headers.NewHeaders()
+	_ = headers.Set("content-type", "text/html")
+	return response.NewChunkedResponse(response.StatusOK, f, headers)
 }

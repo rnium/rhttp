@@ -25,7 +25,7 @@ func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
 	var body []byte
 	var errored bool
 	for {
-		buf := make([]byte, 32)
+		buf := make([]byte, 512)
 		n_read, err := res.reader.Read(buf)
 		if err != nil {
 			break

@@ -14,8 +14,9 @@ const PORT uint16 = 8000
 
 func getRouter() *router.Router {
 	router := router.NewRouter()
+	router.Get("/", Index)
+	router.Get("/ping", Ping)
 	router.Get("/health", HealthCheck)
-	router.Get("/servererror", MyBad)
 	router.Get("/httpbin/stream/:n", HttpBinStream)
 	return router
 }
