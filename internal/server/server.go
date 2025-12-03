@@ -7,6 +7,7 @@ import (
 	"log"
 	"log/slog"
 	"net"
+	"sync"
 
 	"github.com/rnium/rhttp/internal/request"
 	"github.com/rnium/rhttp/internal/response"
@@ -14,12 +15,21 @@ import (
 )
 
 type Server struct {
-	listener net.Listener
-	router   *router.Router
+	listener  net.Listener
+	router    *router.Router
+	wg        sync.WaitGroup
+	closeOnce sync.Once
 }
 
-func (s *Server) Close() {
-	s.listener.Close()
+func (s *Server) Close() error {
+	var err error
+	s.closeOnce.Do(func() {
+		if s.listener != nil {
+			err = s.listener.Close()
+		}
+		s.wg.Wait()
+	})
+	return err;
 }
 
 func (s *Server) runHandler(handler router.Handler, req *request.Request) (res *response.Response, err error) {
@@ -42,7 +52,10 @@ func (s *Server) runHandler(handler router.Handler, req *request.Request) (res *
 }
 
 func (s *Server) handleConn(conn io.ReadWriteCloser) {
-	defer conn.Close()
+	defer func() {
+		conn.Close()
+		s.wg.Done()
+	}()
 	req, err := request.GetRequest(conn)
 	if err != nil {
 		fmt.Println(err)
@@ -74,6 +87,7 @@ func (s *Server) acceptConnections() {
 		if err != nil {
 			return
 		}
+		s.wg.Add(1)
 		go s.handleConn(conn)
 	}
 }
