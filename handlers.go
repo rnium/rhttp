@@ -30,12 +30,26 @@ func HttpBinStream(r *request.Request) *response.Response {
 	return response.NewChunkedResponse(response.StatusOK, res.Body, nil)
 }
 
-func Index(r *request.Request) *response.Response {
-	f, err := os.Open("./templates/index.html")
+func OpenAPISpec(r *request.Request) *response.Response {
+	f, err := os.Open("./openapi.yaml")
 	if err != nil {
 		panic(err)
 	}
+
+	headers := headers.NewHeaders()
+	_ = headers.Set("content-type", "application/yaml")
+
+	return response.NewChunkedResponse(response.StatusOK, f, headers)
+}
+
+func SwaggerUI(r *request.Request) *response.Response {
+	f, err := os.Open("./templates/swagger.html")
+	if err != nil {
+		panic(err)
+	}
+
 	headers := headers.NewHeaders()
 	_ = headers.Set("content-type", "text/html")
+
 	return response.NewChunkedResponse(response.StatusOK, f, headers)
 }

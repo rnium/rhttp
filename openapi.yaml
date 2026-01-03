@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: rHTTP
+  summary: A custom HTTP server in Go
+  contact:
+    name: MSI Rony
+    email: abrony@gmail.com
+    url: https://sirony.me
+  version: 1.0.0
+  description: This is a custom HTTP server implemented in Go, providing various endpoints for health checks, pinging, and streaming data from httpbin.
+tags:
+  - name: HTML Pages
+    description: Endpoints serving HTML content
+  - name: Server Info
+    description: Endpoints providing server status information
+paths:
+  /:
+    get:
+      summary: Index page
+      description: Returns HTML index page
+      tags:
+        - HTML Pages
+      responses:
+        "200":
+          description: HTML page
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /health:
+    get:
+      summary: Health check
+      description: Checks if server is running
+      tags:
+        - Server Info
+      responses:
+        "200":
+          description: Health OK
+          content:
+            text/html:
+              schema:
+                type: string
+                example: "<h1>Everything working fine</h1>"
+
+  /ping:
+    get:
+      summary: Ping server
+      responses:
+        "200":
+          description: Pong response
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Pong
+
+  /httpbin/stream/{n}:
+    get:
+      summary: Stream data from httpbin
+      parameters:
+        - name: n
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Number of chunks to stream
+      responses:
+        "200":
+          description: Chunked stream response
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary

@@ -14,8 +14,9 @@ const PORT uint16 = 8000
 
 func getRouter() *router.Router {
 	router := router.NewRouter()
-	router.Get("/", Index)
+	router.Get("/", SwaggerUI)
 	router.Get("/ping", Ping)
+	router.Get("/swagger/openapi.yaml", OpenAPISpec)
 	router.Get("/health", HealthCheck)
 	router.Get("/httpbin/stream/:n", HttpBinStream)
 	return router
@@ -24,7 +25,7 @@ func getRouter() *router.Router {
 func main() {
 	router := getRouter()
 	server := server.Serve(PORT, router)
-	defer func ()  {
+	defer func() {
 		fmt.Println("Shutting down gracefully")
 		err := server.Close()
 		if err != nil {
