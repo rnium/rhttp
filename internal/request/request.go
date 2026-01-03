@@ -141,13 +141,13 @@ outer:
 			read += sepIdx + len(sep)
 		case parserBody:
 			remaining := r.contentLength - len(r.Body)
-			if remaining == 0 {
-				r.state = parserDone
-				continue
-			}
 			endIdx := min(len(currentData), remaining)
 			r.Body = append(r.Body, currentData[:endIdx]...)
 			read += endIdx
+			if r.contentLength == len(r.Body) {
+				r.state = parserDone
+				continue
+			}
 		case parserDone:
 			break outer
 		case parserError:
