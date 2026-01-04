@@ -1,8 +1,10 @@
-package utils
+package form
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -18,6 +20,14 @@ type File struct {
 	Filename    string
 	ContentType string
 	Data        []byte
+}
+
+func (f *File) ToBase64Data() string {
+	return fmt.Sprintf(
+		"data:%s;base64,%s",
+		f.ContentType,
+		base64.StdEncoding.EncodeToString(f.Data),
+	)
 }
 
 type FormData struct {
