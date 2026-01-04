@@ -9,8 +9,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/rnium/rhttp/internal/request"
-	"github.com/rnium/rhttp/internal/response"
+	"github.com/rnium/rhttp/internal/http/request"
+	"github.com/rnium/rhttp/internal/http/response"
 	"github.com/rnium/rhttp/internal/router"
 )
 

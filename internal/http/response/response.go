@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/rnium/rhttp/internal/headers"
-	"github.com/rnium/rhttp/internal/request"
+	"github.com/rnium/rhttp/internal/http/headers"
+	"github.com/rnium/rhttp/internal/http/request"
 )
 
 var ErrResponseClosed = fmt.Errorf("response closed")

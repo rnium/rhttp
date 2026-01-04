@@ -5,7 +5,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/rnium/rhttp/internal/request"
+	"github.com/rnium/rhttp/internal/http/request"
 )
 
 type Node struct {
@@ -69,7 +69,7 @@ func (r *Router) findTrailerNode(target_url string) (*Node, request.Params) {
 	parts := getUrlParts(target_url)
 	params := request.NewParams()
 	curr := r.rootNode
-	for _, part := range parts {		
+	for _, part := range parts {
 		if part == "" {
 			continue
 		}

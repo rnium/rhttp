@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/rnium/rhttp/internal/request"
-	"github.com/rnium/rhttp/internal/response"
+	"github.com/rnium/rhttp/internal/http/request"
+	"github.com/rnium/rhttp/internal/http/response"
 )
 
 func HandlePost(r *request.Request) *response.Response {

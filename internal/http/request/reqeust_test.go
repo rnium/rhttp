@@ -4,7 +4,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/rnium/rhttp/internal/headers"
+	"github.com/rnium/rhttp/internal/http/headers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

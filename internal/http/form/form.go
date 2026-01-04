@@ -7,7 +7,7 @@ import (
 	"mime"
 	"mime/multipart"
 
-	"github.com/rnium/rhttp/internal/request"
+	"github.com/rnium/rhttp/internal/http/request"
 )
 
 var ErrNoFormData = errors.New("Request has no form data")

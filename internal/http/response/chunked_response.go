@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/rnium/rhttp/internal/headers"
+	"github.com/rnium/rhttp/internal/http/headers"
 )
 
 func NewChunkedResponse(StatusCode int, reader io.Reader, extra_headers *headers.Headers) *Response {

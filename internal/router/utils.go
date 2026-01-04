@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/rnium/rhttp/internal/request"
-	"github.com/rnium/rhttp/internal/response"
+	"github.com/rnium/rhttp/internal/http/request"
+	"github.com/rnium/rhttp/internal/http/response"
 )
 
 var ErrInvalidHttpTarget = fmt.Errorf("invalid http target")

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rnium/rhttp/internal/headers"
+	"github.com/rnium/rhttp/internal/http/headers"
 )
 
 func errorResponse(statusCode int, message string) *Response {

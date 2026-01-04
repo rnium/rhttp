@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/rnium/rhttp/internal/request"
-	"github.com/rnium/rhttp/internal/response"
+	"github.com/rnium/rhttp/internal/http/request"
+	"github.com/rnium/rhttp/internal/http/response"
 )
 
 const MethodGet = "GET" // methods are case sensitive, RFC 9110#section-9.1-5
@@ -43,7 +43,7 @@ func (r *Router) getView(target string) (*View, request.Params) {
 	if node == nil || node.view == nil {
 		return nil, params
 	}
-	
+
 	return node.view, params
 }
 
@@ -55,7 +55,7 @@ func (r *Router) GetHandler(request *request.Request) Handler {
 		return NewErrorHandler(response.StatusNotFound)
 	}
 	if !slices.Contains(view.methods, rl.Method) {
-		return NewErrorHandler(response.StatusMethodNotAllowed) 
+		return NewErrorHandler(response.StatusMethodNotAllowed)
 	}
 	return view.handler
 }

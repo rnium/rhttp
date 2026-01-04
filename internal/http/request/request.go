@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rnium/rhttp/internal/headers"
+	"github.com/rnium/rhttp/internal/http/headers"
 )
 
 type ParserState int8
