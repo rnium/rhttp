@@ -13,14 +13,14 @@ import (
 type stringMap map[string]string
 
 type WriteData struct {
-	Args    stringMap `json:"args"`
-	Data    string    `json:"data"`
-	Files   stringMap `json:"files"`
-	Form    stringMap `json:"form"`
-	Headers stringMap `json:"headers"`
-	Json    stringMap `json:"json"`
-	Origin  string    `json:"origin"`
-	Url     string    `json:"url"`
+	Args    stringMap      `json:"args"`
+	Data    string         `json:"data"`
+	Files   stringMap      `json:"files"`
+	Form    stringMap      `json:"form"`
+	Headers stringMap      `json:"headers"`
+	Json    map[string]any `json:"json"`
+	Origin  string         `json:"origin"`
+	Url     string         `json:"url"`
 }
 
 func newWriteData() *WriteData {
@@ -37,12 +37,17 @@ func getWriteData(req *request.Request) *WriteData {
 	req.Headers.ForEach(func(name, value string) {
 		wd.Headers[name] = value
 	})
+	contentType, _ := req.Headers.Get("content-type")
 	formdata, _ := form.GetFormData(req)
 	if formdata != nil {
 		wd.Form = formdata.Fields
 		for field, file := range formdata.Files {
 			wd.Files[field] = file.ToBase64Data()
 		}
+	} else if contentType == "application/json" {
+		jsonData := make(map[string]any)
+		_ = json.Unmarshal(req.Body, &jsonData)
+		wd.Json = jsonData
 	}
 	return wd
 }
