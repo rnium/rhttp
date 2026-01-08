@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 	"unicode"
 
@@ -28,4 +29,36 @@ func NewErrorHandler(statusCode int) Handler {
 	return func(r *request.Request) *response.Response {
 		return response.ErrorResponseHTML(statusCode)
 	}
+}
+
+
+func parseTarget(target string) (string, map[string]any) {
+	parts := strings.SplitN(target, "?", 2)
+	if len(parts) == 1 {
+		return parts[0], nil
+	}
+
+	queryParams := make(map[string]any)
+
+	for pair := range strings.SplitSeq(parts[1], "&") {
+		if pair == "" {
+			continue
+		}
+
+		key, val, found := strings.Cut(pair, "=")
+		if !found {
+			queryParams[key] = true
+			continue
+		}
+
+		k, err1 := url.QueryUnescape(key)
+		v, err2 := url.QueryUnescape(val)
+		if err1 != nil || err2 != nil {
+			continue
+		}
+
+		queryParams[k] = v
+	}
+
+	return parts[0], queryParams
 }
