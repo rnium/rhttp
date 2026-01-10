@@ -26,18 +26,6 @@ var ErrMalformedRequestLine = fmt.Errorf("malformed request line")
 var ErrMalformedFieldLine = fmt.Errorf("malformed field line")
 var ErrMalformedFieldValue = fmt.Errorf("malformed field value")
 
-type Params map[string]string
-
-func NewParams() Params {
-	return make(Params)
-}
-
-type RequestLine struct {
-	Method  string
-	Target  string
-	Version string
-}
-
 type Request struct {
 	RequestLine   *RequestLine
 	Headers       *headers.Headers
@@ -54,43 +42,6 @@ func newRequest() *Request {
 		RequestLine: &RequestLine{},
 		Headers:     headers.NewHeaders(),
 		Body:        nil,
-	}
-}
-
-func (rl *RequestLine) parseRequestLine(data []byte) (int, error) {
-	sep := []byte(SEPARATOR)
-	sepIdx := bytes.Index(data, sep)
-	if sepIdx == -1 {
-		return 0, nil
-	}
-	elements_data := bytes.Split(data[:sepIdx], []byte(" "))
-	if len(elements_data) != 3 {
-		return 0, ErrMalformedRequestLine
-	}
-	rl.Method = string(elements_data[0])
-	rl.Target = string(elements_data[1])
-	rl.Version = string(elements_data[2])
-	return sepIdx + len(sep), nil
-}
-
-func (r *Request) SetAllParams(params Params, query_params Params) {
-	r.params = params
-	r.query_params = query_params
-}
-
-func (r *Request) Param(name string) (string, bool) {
-	value, ok := r.params[name]
-	return value, ok
-}
-
-func (r *Request) QParam(name string) (string, bool) {
-	value, ok := r.query_params[name]
-	return value, ok
-}
-
-func (r *Request) QParamForEach(f func(name, value string)) {
-	for name, val := range r.query_params {
-		f(name, val)
 	}
 }
 
