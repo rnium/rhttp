@@ -45,6 +45,7 @@ type Request struct {
 	state         ParserState
 	contentLength int
 	params        Params
+	query_params  Params
 }
 
 func newRequest() *Request {
@@ -72,13 +73,25 @@ func (rl *RequestLine) parseRequestLine(data []byte) (int, error) {
 	return sepIdx + len(sep), nil
 }
 
-func (r *Request) SetParams(p Params) {
-	r.params = p
+func (r *Request) SetAllParams(params Params, query_params Params) {
+	r.params = params
+	r.query_params = query_params
 }
 
 func (r *Request) Param(name string) (string, bool) {
 	value, ok := r.params[name]
 	return value, ok
+}
+
+func (r *Request) QParam(name string) (string, bool) {
+	value, ok := r.query_params[name]
+	return value, ok
+}
+
+func (r *Request) QParamForEach(f func(name, value string)) {
+	for name, val := range r.query_params {
+		f(name, val)
+	}
 }
 
 func (r *Request) done() bool {

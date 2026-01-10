@@ -49,8 +49,9 @@ func (r *Router) getView(target string) (*View, request.Params) {
 
 func (r *Router) GetHandler(request *request.Request) Handler {
 	rl := request.RequestLine
-	view, params := r.getView(rl.Target)
-	request.SetParams(params)
+	path, query_params := parseTarget(rl.Target)
+	view, params := r.getView(path)
+	request.SetAllParams(params, query_params)
 	if view == nil {
 		return NewErrorHandler(response.StatusNotFound)
 	}

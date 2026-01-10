@@ -32,13 +32,13 @@ func NewErrorHandler(statusCode int) Handler {
 }
 
 
-func parseTarget(target string) (string, map[string]any) {
+func parseTarget(target string) (string, request.Params) {
 	parts := strings.SplitN(target, "?", 2)
 	if len(parts) == 1 {
 		return parts[0], nil
 	}
 
-	queryParams := make(map[string]any)
+	queryParams := request.NewParams()
 
 	for pair := range strings.SplitSeq(parts[1], "&") {
 		if pair == "" {
@@ -47,7 +47,6 @@ func parseTarget(target string) (string, map[string]any) {
 
 		key, val, found := strings.Cut(pair, "=")
 		if !found {
-			queryParams[key] = true
 			continue
 		}
 
