@@ -75,13 +75,16 @@ outer:
 			if sepIdx == 0 {
 				read += len(sep)
 				contentLengthRaw, exists := r.Headers.Get("content-length")
-				if exists {
-					r.state++
+				if exists {					
 					r.contentLength, err = strconv.Atoi(contentLengthRaw)
 					if err != nil {
 						r.state = parserError
 					}
-				} else {
+					if r.contentLength > 0 {
+						r.state = parserBody	
+					}
+				} 
+				if !exists || r.contentLength == 0 {
 					r.state = parserDone
 				}
 				continue
