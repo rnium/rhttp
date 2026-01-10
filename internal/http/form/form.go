@@ -2,14 +2,13 @@ package form
 
 import (
 	"bytes"
-	"encoding/base64"
 	"errors"
-	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
 
 	"github.com/rnium/rhttp/internal/http/request"
+	"github.com/rnium/rhttp/internal/utils"
 )
 
 var ErrNoFormData = errors.New("Request has no form data")
@@ -23,11 +22,7 @@ type File struct {
 }
 
 func (f *File) ToBase64Data() string {
-	return fmt.Sprintf(
-		"data:%s;base64,%s",
-		f.ContentType,
-		base64.StdEncoding.EncodeToString(f.Data),
-	)
+	return utils.ToBase64Data(f.ContentType, f.Data)
 }
 
 type FormData struct {
