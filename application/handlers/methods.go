@@ -8,6 +8,7 @@ import (
 	"github.com/rnium/rhttp/internal/http/headers"
 	"github.com/rnium/rhttp/internal/http/request"
 	"github.com/rnium/rhttp/internal/http/response"
+	"github.com/rnium/rhttp/internal/utils"
 )
 
 type stringMap map[string]string
@@ -37,6 +38,9 @@ func getWriteData(req *request.Request) *WriteData {
 	req.Headers.ForEach(func(name, value string) {
 		wd.Headers[name] = value
 	})
+	req.QParamForEach(func(name, value string) {
+		wd.Args[name] = value
+	})
 	contentType, _ := req.Headers.Get("content-type")
 	formdata, _ := form.GetFormData(req)
 	if formdata != nil {
@@ -48,6 +52,8 @@ func getWriteData(req *request.Request) *WriteData {
 		jsonData := make(map[string]any)
 		_ = json.Unmarshal(req.Body, &jsonData)
 		wd.Json = jsonData
+	} else {
+		wd.Data = utils.ToBase64Data(contentType, req.Body)
 	}
 	return wd
 }
