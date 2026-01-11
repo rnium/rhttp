@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"strconv"
 	"strings"
 
@@ -32,16 +33,18 @@ type Request struct {
 	Body          []byte
 	state         ParserState
 	contentLength int
+	conn          *net.Conn
 	params        Params
 	query_params  Params
 }
 
-func newRequest() *Request {
+func newRequest(conn *net.Conn) *Request {
 	return &Request{
 		state:       parserInit,
 		RequestLine: &RequestLine{},
 		Headers:     headers.NewHeaders(),
 		Body:        nil,
+		conn: conn,
 	}
 }
 
@@ -75,15 +78,15 @@ outer:
 			if sepIdx == 0 {
 				read += len(sep)
 				contentLengthRaw, exists := r.Headers.Get("content-length")
-				if exists {					
+				if exists {
 					r.contentLength, err = strconv.Atoi(contentLengthRaw)
 					if err != nil {
 						r.state = parserError
 					}
 					if r.contentLength > 0 {
-						r.state = parserBody	
+						r.state = parserBody
 					}
-				} 
+				}
 				if !exists || r.contentLength == 0 {
 					r.state = parserDone
 				}
@@ -126,7 +129,8 @@ outer:
 }
 
 func GetRequest(conn io.Reader) (*Request, error) {
-	request := newRequest()
+	netConn, _ := conn.(net.Conn)
+	request := newRequest(&netConn)
 	buf := make([]byte, 1000)
 	bufIdx := 0
 	for !request.done() {
