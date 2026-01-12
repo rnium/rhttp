@@ -7,7 +7,12 @@ import (
 
 func getRoutes() *router.Router {
 	router := router.NewRouter()
-	router.Post("/post", handlers.HandlePost)
 	router.Get("/", handlers.Index)
+	// method routes
+	router.Get("/get", handlers.HandleMethod)
+	router.Post("/post", handlers.HandleMethod)
+	router.Put("/put", handlers.HandleMethod)
+	router.Patch("/patch", handlers.HandleMethod)
+	router.Delete("/delete", handlers.HandleMethod)
 	return router
 }

@@ -13,7 +13,14 @@ import (
 
 type stringMap map[string]string
 
-type WriteData struct {
+type ReadResponseData struct {
+	Args    stringMap `json:"args"`
+	Headers stringMap `json:"headers"`
+	Origin  string    `json:"origin"`
+	Url     string    `json:"url"`
+}
+
+type WriteResponseData struct {
 	Args    stringMap      `json:"args"`
 	Data    string         `json:"data"`
 	Files   stringMap      `json:"files"`
@@ -24,8 +31,15 @@ type WriteData struct {
 	Url     string         `json:"url"`
 }
 
-func newWriteData() *WriteData {
-	return &WriteData{
+func newReadData() *ReadResponseData {
+	return &ReadResponseData{
+		Args:    make(stringMap),
+		Headers: make(stringMap),
+	}
+}
+
+func newWriteData() *WriteResponseData {
+	return &WriteResponseData{
 		Args:    make(stringMap),
 		Files:   make(stringMap),
 		Form:    make(stringMap),
@@ -33,7 +47,21 @@ func newWriteData() *WriteData {
 	}
 }
 
-func getWriteData(req *request.Request) *WriteData {
+func getReadData(req *request.Request) *ReadResponseData {
+	rd := newReadData()
+	req.Headers.ForEach(func(name, value string) {
+		rd.Headers[name] = value
+	})
+	req.QParamForEach(func(name, value string) {
+		rd.Args[name] = value
+	})
+
+	rd.Origin = getClientIP(req)
+	rd.Url = buildFullURL(req)
+	return rd
+}
+
+func getWriteData(req *request.Request) *WriteResponseData {
 	wd := newWriteData()
 	req.Headers.ForEach(func(name, value string) {
 		wd.Headers[name] = value
@@ -49,18 +77,28 @@ func getWriteData(req *request.Request) *WriteData {
 			wd.Files[field] = file.ToBase64Data()
 		}
 	} else if contentType == "application/json" {
+		wd.Data = string(req.Body)
 		jsonData := make(map[string]any)
 		_ = json.Unmarshal(req.Body, &jsonData)
 		wd.Json = jsonData
-	} else {
+	} else if len(req.Body) > 0 {
 		wd.Data = utils.ToBase64Data(contentType, req.Body)
 	}
+	wd.Origin = getClientIP(req)
+	wd.Url = buildFullURL(req)
 	return wd
 }
 
-func HandlePost(r *request.Request) *response.Response {
-	wd := getWriteData(r)
-	data, err := json.Marshal(wd)
+func HandleMethod(r *request.Request) *response.Response {
+	var data []byte
+	var err error
+	if r.RequestLine.Method == "GET" {
+		rd := getReadData(r)
+		data, err = json.Marshal(rd)
+	} else {
+		wd := getWriteData(r)
+		data, err = json.Marshal(wd)
+	}	
 	if err != nil {
 		return response.Response500(errors.New("Cannot convert data to json"))
 	}
