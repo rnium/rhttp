@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime"
 	"mime/multipart"
+	"net/url"
 
 	"github.com/rnium/rhttp/internal/http/request"
 	"github.com/rnium/rhttp/internal/utils"
@@ -43,38 +44,51 @@ func newFormData() *FormData {
 
 func getFormData(contentType string, body []byte) (*FormData, error) {
 	mediaType, params, err := mime.ParseMediaType(contentType)
-	if err != nil || mediaType != "multipart/form-data" {
-		return nil, ErrNoFormData
+	if err != nil {
+		return nil, err
 	}
-	boundary, ok := params["boundary"]
-	if !ok || boundary == "" {
-		return nil, ErrNoFormData
-	}
-
 	formData := newFormData()
-	reader := multipart.NewReader(bytes.NewReader(body), boundary)
-	for {
-		part, err := reader.NextPart()
-		if err == io.EOF {
-			break
-		}
+	switch mediaType {
+	case "application/x-www-form-urlencoded":
+		values, err := url.ParseQuery(string(body))
 		if err != nil {
-			return nil, errors.Join(ErrReadingFormPart, err)
+			return nil, err
 		}
-		if part.FileName() == "" {
-			value, _ := io.ReadAll(part)
-			formData.Fields[part.FormName()] = string(value)
-			continue
+		for name, value := range values {
+			formData.Fields[name] = value[0]
 		}
-		data, err := io.ReadAll(part)
-		if err != nil {
-			return nil, ErrReadingFileData
+	case "multipart/form-data":
+		boundary, ok := params["boundary"]
+		if !ok || boundary == "" {
+			return nil, ErrNoFormData
 		}
-		formData.Files[part.FormName()] = &File{
-			Filename:    part.FileName(),
-			ContentType: part.Header.Get("Content-Type"),
-			Data:        data,
+		reader := multipart.NewReader(bytes.NewReader(body), boundary)
+		for {
+			part, err := reader.NextPart()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return nil, errors.Join(ErrReadingFormPart, err)
+			}
+			if part.FileName() == "" {
+				value, _ := io.ReadAll(part)
+				formData.Fields[part.FormName()] = string(value)
+				continue
+			}
+			data, err := io.ReadAll(part)
+			if err != nil {
+				return nil, ErrReadingFileData
+			}
+			formData.Files[part.FormName()] = &File{
+				Filename:    part.FileName(),
+				ContentType: part.Header.Get("Content-Type"),
+				Data:        data,
+			}
 		}
+	default:
+		return nil, ErrNoFormData
+
 	}
 	return formData, nil
 }
