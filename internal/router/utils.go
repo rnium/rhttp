@@ -17,7 +17,7 @@ func validateTarget(target string) error {
 	for _, c := range target {
 		switch {
 		case unicode.IsLetter(c) || unicode.IsDigit(c):
-		case strings.ContainsRune("./-_:", c):
+		case strings.ContainsRune("*./-_:", c):
 		default:
 			return ErrInvalidHttpTarget
 		}
@@ -58,6 +58,5 @@ func parseTarget(target string) (string, request.Params) {
 
 		queryParams[k] = v
 	}
-
 	return parts[0], queryParams
 }

@@ -48,4 +48,11 @@ func TestFindTrailingNode(t *testing.T) {
 	assert.Panics(t, func() {
 		router.insertUrl("/inventory/category/:cat_id_new/products/:prod_id")
 	})
+
+	// wildcard test
+	router.insertUrl("/file/*")
+	node, params = router.findTrailerNode("/file/images/site/logo.png")
+	assert.NotNil(t, node)
+	wcard_param := params["*"]
+	assert.Equal(t, "images/site/logo.png", wcard_param)
 }

@@ -9,10 +9,11 @@ import (
 )
 
 type Node struct {
-	name       string
-	childNodes map[string]*Node
-	paramNode  *Node
-	view       *View
+	name         string
+	childNodes   map[string]*Node
+	paramNode    *Node
+	wildcardNode *Node
+	view         *View
 }
 
 func newNode(name string) *Node {
@@ -44,7 +45,14 @@ func (r *Router) insertUrl(target_url string) *Node {
 			curr = next_node
 		} else {
 			var node *Node
-			if after, ok := strings.CutPrefix(part, ":"); ok {
+			if part == "*" {
+				if curr.wildcardNode == nil {
+					node = newNode("*")
+					curr.wildcardNode = node
+				} else {
+					node = curr.wildcardNode
+				}
+			} else if after, ok := strings.CutPrefix(part, ":"); ok {
 				if curr.paramNode == nil {
 					node = newNode(after)
 					curr.paramNode = node
@@ -69,7 +77,7 @@ func (r *Router) findTrailerNode(target_url string) (*Node, request.Params) {
 	parts := getUrlParts(target_url)
 	params := request.NewParams()
 	curr := r.rootNode
-	for _, part := range parts {
+	for i, part := range parts {
 		if part == "" {
 			continue
 		}
@@ -84,6 +92,12 @@ func (r *Router) findTrailerNode(target_url string) (*Node, request.Params) {
 			params[pNode.name] = part
 			curr = pNode
 			continue
+		}
+		// Check wildcard node - captures remaining path
+		if curr.wildcardNode != nil {
+			remainingParts := parts[i:]
+			params["*"] = strings.Join(remainingParts, "/")
+			return curr.wildcardNode, params
 		}
 		return nil, nil
 	}
