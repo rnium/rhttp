@@ -8,8 +8,20 @@ import (
 var ErrInvalidToken = fmt.Errorf("token contains invalid characters")
 var ErrEmptyToken = fmt.Errorf("token is empty")
 
+type Header struct {
+	Name  string
+	Value string
+}
+
+func newHeader(name, value string) *Header {
+	return &Header{
+		Name:  name,
+		Value: value,
+	}
+}
+
 type Headers struct {
-	headers map[string]string
+	headers map[string]*Header
 }
 
 func validateToken(token string) error {
@@ -35,16 +47,21 @@ func (h *Headers) Set(name, value string) error {
 		return err
 	}
 	name_lower := strings.ToLower(name)
-	if prev_val, exists := h.headers[name_lower]; exists {
-		value = strings.Join([]string{prev_val, value}, ", ") // RFC 9110 #5.3
+	if prevHeader, exists := h.headers[name_lower]; exists {
+		value = strings.Join([]string{prevHeader.Value, value}, ", ") // RFC 9110 #5.3
+		prevHeader.Value = value
+	} else {
+		h.headers[name_lower] = newHeader(name, value)
 	}
-	h.headers[name_lower] = value
 	return nil
 }
 
 func (h *Headers) Get(name string) (string, bool) {
 	val, ok := h.headers[strings.ToLower(name)]
-	return val, ok
+	if ok {
+		return val.Value, ok
+	}
+	return "", ok
 }
 
 func (h *Headers) Replace(name, newValue string) (err error, new bool) {
@@ -53,7 +70,7 @@ func (h *Headers) Replace(name, newValue string) (err error, new bool) {
 		err = h.Set(name_lower, newValue)
 		return err, true
 	}
-	h.headers[name_lower] = newValue
+	h.headers[name_lower] = newHeader(name, newValue)
 	return nil, false
 }
 
@@ -62,8 +79,8 @@ func (h *Headers) Remove(name string) {
 }
 
 func (h *Headers) ForEach(f func(name, value string)) {
-	for k, v := range h.headers {
-		f(k, v)
+	for _, header := range h.headers {
+		f(header.Name, header.Value)
 	}
 }
 
@@ -73,7 +90,7 @@ func (h *Headers) Count() int {
 
 func NewHeaders() *Headers {
 	return &Headers{
-		headers: make(map[string]string),
+		headers: make(map[string]*Header),
 	}
 }
 
