@@ -1,14 +1,11 @@
-package handlers
+package methods
 
 import (
 	"encoding/json"
-	"errors"
 
-	"github.com/rnium/rhttp/internal/http/form"
-	"github.com/rnium/rhttp/internal/http/headers"
+	"github.com/rnium/rhttp/internal/build"
 	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/http/response"
-	"github.com/rnium/rhttp/internal/utils"
+	"github.com/rnium/rhttp/internal/inspect"
 )
 
 type stringMap map[string]string
@@ -38,7 +35,7 @@ func newReadData() *ReadResponseData {
 	}
 }
 
-func newWriteData() *WriteResponseData {
+func newWriteResponseData() *WriteResponseData {
 	return &WriteResponseData{
 		Args:    make(stringMap),
 		Files:   make(stringMap),
@@ -47,7 +44,7 @@ func newWriteData() *WriteResponseData {
 	}
 }
 
-func getReadData(req *request.Request) *ReadResponseData {
+func buildReadData(req *request.Request) *ReadResponseData {
 	rd := newReadData()
 	req.Headers.ForEach(func(name, value string) {
 		rd.Headers[name] = value
@@ -56,13 +53,14 @@ func getReadData(req *request.Request) *ReadResponseData {
 		rd.Args[name] = value
 	})
 
-	rd.Origin = getClientIP(req)
-	rd.Url = buildFullURL(req)
+	rd.Origin = inspect.ClientIP(req)
+	rd.Url = inspect.FullURL(req)
 	return rd
 }
 
-func getWriteData(req *request.Request) *WriteResponseData {
-	wd := newWriteData()
+
+func buildWriteData(req *request.Request) *WriteResponseData {
+	wd := newWriteResponseData()
 	req.Headers.ForEach(func(name, value string) {
 		wd.Headers[name] = value
 	})
@@ -70,7 +68,7 @@ func getWriteData(req *request.Request) *WriteResponseData {
 		wd.Args[name] = value
 	})
 	contentType, _ := req.Headers.Get("content-type")
-	formdata, _ := form.GetFormData(req)
+	formdata, _ := req.FormData()
 	if formdata != nil {
 		wd.Form = formdata.Fields
 		for field, file := range formdata.Files {
@@ -82,27 +80,10 @@ func getWriteData(req *request.Request) *WriteResponseData {
 		_ = json.Unmarshal(req.Body, &jsonData)
 		wd.Json = jsonData
 	} else if len(req.Body) > 0 {
-		wd.Data = utils.ToBase64Data(contentType, req.Body)
+		wd.Data = build.ToBase64Data(contentType, req.Body)
 	}
-	wd.Origin = getClientIP(req)
-	wd.Url = buildFullURL(req)
+	wd.Origin = inspect.ClientIP(req)
+	wd.Url = inspect.FullURL(req)
 	return wd
 }
 
-func HandleMethod(r *request.Request) *response.Response {
-	var data []byte
-	var err error
-	if r.RequestLine.Method == "GET" {
-		rd := getReadData(r)
-		data, err = json.Marshal(rd)
-	} else {
-		wd := getWriteData(r)
-		data, err = json.Marshal(wd)
-	}	
-	if err != nil {
-		return response.Response500(errors.New("Cannot convert data to json"))
-	}
-	headers := headers.NewHeaders()
-	_ = headers.Set("Content-type", "application/json")
-	return response.NewResponse(200, data, headers)
-}
