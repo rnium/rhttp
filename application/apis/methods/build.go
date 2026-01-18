@@ -28,7 +28,7 @@ type WriteResponseData struct {
 	Url     string         `json:"url"`
 }
 
-func newReadData() *ReadResponseData {
+func newReadResponseData() *ReadResponseData {
 	return &ReadResponseData{
 		Args:    make(stringMap),
 		Headers: make(stringMap),
@@ -45,7 +45,7 @@ func newWriteResponseData() *WriteResponseData {
 }
 
 func buildReadData(req *request.Request) *ReadResponseData {
-	rd := newReadData()
+	rd := newReadResponseData()
 	req.Headers.ForEach(func(name, value string) {
 		rd.Headers[name] = value
 	})
