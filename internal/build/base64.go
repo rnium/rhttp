@@ -1,10 +1,9 @@
-package utils
+package build
 
 import (
 	"encoding/base64"
 	"fmt"
 )
-
 
 func ToBase64(data []byte) string {
 	return base64.StdEncoding.EncodeToString(data)

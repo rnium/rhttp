@@ -8,8 +8,7 @@ import (
 	"mime/multipart"
 	"net/url"
 
-	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/utils"
+	"github.com/rnium/rhttp/internal/build"
 )
 
 var ErrNoFormData = errors.New("Request has no form data")
@@ -23,7 +22,7 @@ type File struct {
 }
 
 func (f *File) ToBase64Data() string {
-	return utils.ToBase64Data(f.ContentType, f.Data)
+	return build.ToBase64Data(f.ContentType, f.Data)
 }
 
 type FormData struct {
@@ -42,7 +41,7 @@ func newFormData() *FormData {
 	}
 }
 
-func getFormData(contentType string, body []byte) (*FormData, error) {
+func GetFormData(contentType string, body []byte) (*FormData, error) {
 	mediaType, params, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		return nil, err
@@ -91,12 +90,4 @@ func getFormData(contentType string, body []byte) (*FormData, error) {
 
 	}
 	return formData, nil
-}
-
-func GetFormData(r *request.Request) (*FormData, error) {
-	if r == nil {
-		return nil, ErrNoFormData
-	}
-	ctype, _ := r.Headers.Get("content-type")
-	return getFormData(ctype, r.Body)
 }
