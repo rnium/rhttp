@@ -8,44 +8,34 @@ import (
 	"github.com/rnium/rhttp/internal/inspect"
 )
 
-type stringMap map[string]string
+type Args map[string]string
+type Headers map[string]string
+type Form map[string]string
+type Files map[string]string
 
 type ReadResponseData struct {
-	Args    stringMap `json:"args"`
-	Headers stringMap `json:"headers"`
-	Origin  string    `json:"origin"`
-	Url     string    `json:"url"`
+	Args    Args    `json:"args"`
+	Headers Headers `json:"headers"`
+	Origin  string  `json:"origin"`
+	Url     string  `json:"url"`
 }
 
 type WriteResponseData struct {
-	Args    stringMap      `json:"args"`
+	Args    Args           `json:"args"`
 	Data    string         `json:"data"`
-	Files   stringMap      `json:"files"`
-	Form    stringMap      `json:"form"`
-	Headers stringMap      `json:"headers"`
+	Files   Files          `json:"files"`
+	Form    Form           `json:"form"`
+	Headers Headers        `json:"headers"`
 	Json    map[string]any `json:"json"`
 	Origin  string         `json:"origin"`
 	Url     string         `json:"url"`
 }
 
-func newReadResponseData() *ReadResponseData {
-	return &ReadResponseData{
-		Args:    make(stringMap),
-		Headers: make(stringMap),
-	}
-}
-
-func newWriteResponseData() *WriteResponseData {
-	return &WriteResponseData{
-		Args:    make(stringMap),
-		Files:   make(stringMap),
-		Form:    make(stringMap),
-		Headers: make(stringMap),
-	}
-}
-
 func buildReadData(req *request.Request) *ReadResponseData {
-	rd := newReadResponseData()
+	rd := &ReadResponseData{
+		Args:    make(Args),
+		Headers: make(Headers),
+	}
 	req.Headers.ForEach(func(name, value string) {
 		rd.Headers[name] = value
 	})
@@ -58,9 +48,13 @@ func buildReadData(req *request.Request) *ReadResponseData {
 	return rd
 }
 
-
 func buildWriteData(req *request.Request) *WriteResponseData {
-	wd := newWriteResponseData()
+	wd := &WriteResponseData{
+		Args:    make(Args),
+		Files:   make(Files),
+		Form:    make(Form),
+		Headers: make(Headers),
+	}
 	req.Headers.ForEach(func(name, value string) {
 		wd.Headers[name] = value
 	})
@@ -86,4 +80,3 @@ func buildWriteData(req *request.Request) *WriteResponseData {
 	wd.Url = inspect.FullURL(req)
 	return wd
 }
-

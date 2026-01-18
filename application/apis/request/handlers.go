@@ -1,4 +1,4 @@
-package requestinspection
+package request
 
 import (
 	"github.com/rnium/rhttp/internal/http/request"
