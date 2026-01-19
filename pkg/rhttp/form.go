@@ -1,4 +1,4 @@
-package form
+package rhttp
 
 import (
 	"bytes"
@@ -11,9 +11,7 @@ import (
 	"github.com/rnium/rhttp/internal/build"
 )
 
-var ErrNoFormData = errors.New("Request has no form data")
-var ErrReadingFormPart = errors.New("Error reading form part")
-var ErrReadingFileData = errors.New("Error while reading filedata")
+
 
 type File struct {
 	Filename    string

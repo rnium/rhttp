@@ -3,24 +3,22 @@ package home
 import (
 	"os"
 
-	"github.com/rnium/rhttp/internal/http/headers"
-	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/http/response"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
-func healthCheck(r *request.Request) *response.Response {
+func healthCheck(r *rhttp.Request) *rhttp.Response {
 	p := []byte("<h1>Everything working fine</h1>")
-	headers := headers.NewHeaders()
+	headers := rhttp.NewHeaders()
 	_ = headers.Set("content-type", "text/html")
-	return response.NewResponse(response.StatusOK, p, headers)
+	return rhttp.NewResponse(rhttp.StatusOK, p, headers)
 }
 
-func index(r *request.Request) *response.Response {
+func index(r *rhttp.Request) *rhttp.Response {
 	f, err := os.Open("./templates/index.html")
 	if err != nil {
 		panic(err)
 	}
-	headers := headers.NewHeaders()
+	headers := rhttp.NewHeaders()
 	_ = headers.Set("content-type", "text/html")
-	return response.NewChunkedResponse(response.StatusOK, f, headers)
+	return rhttp.NewChunkedResponse(rhttp.StatusOK, f, headers)
 }

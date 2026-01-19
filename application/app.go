@@ -6,13 +6,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/rnium/rhttp/internal/server"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
 func Start(port uint16) {
 	router := getRoutes()
-	server := server.Serve(port, router)
-	defer func ()  {
+	server := rhttp.Serve(port, router)
+	defer func() {
 		fmt.Println("Shutting down gracefully")
 		err := server.Close()
 		if err != nil {

@@ -1,25 +1,24 @@
 package request
 
 import (
-	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/http/response"
 	"github.com/rnium/rhttp/internal/inspect"
 	"github.com/rnium/rhttp/internal/respond"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
-func viewHeaders(r *request.Request) *response.Response {
+func viewHeaders(r *rhttp.Request) *rhttp.Response {
 	headersData := buildHeadersData(r.Headers)
 	return respond.JSON(200, headersData)
 }
 
-func viewIp(r *request.Request) *response.Response {
+func viewIp(r *rhttp.Request) *rhttp.Response {
 	data := make(map[string]string)
 	data["origin"] = inspect.ClientIP(r)
 
 	return respond.JSON(200, data)
 }
 
-func viewUserAgent(r *request.Request) *response.Response {
+func viewUserAgent(r *rhttp.Request) *rhttp.Response {
 	data := make(map[string]any)
 	userAgent, exists := r.Headers.Get("user-agent")
 	if exists {

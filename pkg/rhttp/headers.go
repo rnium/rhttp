@@ -1,12 +1,8 @@
-package headers
+package rhttp
 
 import (
-	"fmt"
 	"strings"
 )
-
-var ErrInvalidToken = fmt.Errorf("token contains invalid characters")
-var ErrEmptyToken = fmt.Errorf("token is empty")
 
 type Header struct {
 	Name  string

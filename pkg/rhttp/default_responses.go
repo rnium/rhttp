@@ -1,14 +1,12 @@
-package response
+package rhttp
 
 import (
 	"fmt"
 	"strings"
-
-	"github.com/rnium/rhttp/internal/http/headers"
 )
 
 func errorResponse(statusCode int, message string) *Response {
-	headers := headers.NewHeaders()
+	headers := NewHeaders()
 	_ = headers.Set("content-type", "text/html")
 	return NewResponse(
 		statusCode,
@@ -23,7 +21,7 @@ var Response500 = func(err error) *Response {
 }
 
 var ErrorResponseHTML = func(status int, messages ...string) *Response {
-	var msg string 
+	var msg string
 	if len(messages) > 0 {
 		msg = fmt.Sprintf("<h1>%s</h1>", strings.Join(messages, ", "))
 	} else {

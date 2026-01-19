@@ -1,8 +1,8 @@
 package response
 
 import (
-	"github.com/rnium/rhttp/internal/http/request"
 	"github.com/rnium/rhttp/internal/inspect"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
 type Args map[string]string
@@ -17,7 +17,7 @@ type ReadResponseData struct {
 	Url     string  `json:"url"`
 }
 
-func buildReadData(req *request.Request) *ReadResponseData {
+func buildReadData(req *rhttp.Request) *ReadResponseData {
 	rd := &ReadResponseData{
 		Args:    make(Args),
 		Headers: make(Headers),

@@ -1,11 +1,10 @@
-package router
+package rhttp
 
 import (
 	"fmt"
 	"path"
 	"strings"
 
-	"github.com/rnium/rhttp/internal/http/request"
 )
 
 type Node struct {
@@ -73,9 +72,9 @@ func (r *Router) insertUrl(target_url string) *Node {
 }
 
 // Find for the trailer node of an url
-func (r *Router) findTrailerNode(target_url string) (*Node, request.Params) {
+func (r *Router) findTrailerNode(target_url string) (*Node, Params) {
 	parts := getUrlParts(target_url)
-	params := request.NewParams()
+	params := NewParams()
 	curr := r.rootNode
 	for i, part := range parts {
 		if part == "" {

@@ -1,4 +1,4 @@
-package server
+package rhttp
 
 import (
 	"errors"
@@ -8,15 +8,11 @@ import (
 	"log/slog"
 	"net"
 	"sync"
-
-	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/http/response"
-	"github.com/rnium/rhttp/internal/router"
 )
 
 type Server struct {
 	listener  net.Listener
-	router    *router.Router
+	router    *Router
 	wg        sync.WaitGroup
 	closeOnce sync.Once
 }
@@ -29,10 +25,10 @@ func (s *Server) Close() error {
 		}
 		s.wg.Wait()
 	})
-	return err;
+	return err
 }
 
-func (s *Server) runHandler(handler router.Handler, req *request.Request) (res *response.Response, err error) {
+func (s *Server) runHandler(handler Handler, req *Request) (res *Response, err error) {
 	func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -56,7 +52,7 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 		conn.Close()
 		s.wg.Done()
 	}()
-	req, err := request.GetRequest(conn)
+	req, err := GetRequest(conn)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -64,7 +60,7 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 	handler := s.router.GetHandler(req)
 	res, err := s.runHandler(handler, req)
 	if err != nil {
-		res = response.Response500(err)
+		res = Response500(err)
 	}
 	_, err = res.WriteResponse(conn, req)
 	if err != nil {
@@ -92,7 +88,7 @@ func (s *Server) acceptConnections() {
 	}
 }
 
-func Serve(port uint16, router *router.Router) *Server {
+func Serve(port uint16, router *Router) *Server {
 	fmt.Println("Starting Server...")
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {

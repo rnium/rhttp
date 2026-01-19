@@ -4,10 +4,10 @@ import (
 	"net"
 	"strings"
 
-	"github.com/rnium/rhttp/internal/http/request"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
-func ClientIP(r *request.Request) string {
+func ClientIP(r *rhttp.Request) string {
 	if xff, _ := r.Headers.Get("X-Forwarded-For"); xff != "" {
 		return strings.Split(xff, ",")[0]
 	}

@@ -4,19 +4,18 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/rnium/rhttp/internal/http/headers"
-	"github.com/rnium/rhttp/internal/http/response"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
-func JSON(status int, payload any) *response.Response {
+func JSON(status int, payload any) *rhttp.Response {
 	data, err := json.Marshal(payload)
 	if err != nil {
-		return response.Response500(
+		return rhttp.Response500(
 			errors.New("error transforming data to json"),
 		)
 	}
 
-	headers := headers.NewHeaders()
+	headers := rhttp.NewHeaders()
 	_ = headers.Set("Content-Type", "application/json")
-	return response.NewResponse(status, data, headers)
+	return rhttp.NewResponse(status, data, headers)
 }

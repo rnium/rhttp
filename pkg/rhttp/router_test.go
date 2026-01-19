@@ -1,16 +1,14 @@
-package router
+package rhttp
 
 import (
 	"testing"
 
-	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/http/response"
 	"github.com/stretchr/testify/assert"
 )
 
-func demoHandler(request *request.Request) *response.Response {
+func demoHandler(request *Request) *Response {
 	p := []byte("hello world")
-	return response.NewResponse(response.StatusOK, p, nil)
+	return NewResponse(StatusOK, p, nil)
 }
 
 func TestRouter(t *testing.T) {

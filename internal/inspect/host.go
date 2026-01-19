@@ -5,10 +5,10 @@ import (
 	"net"
 	"strings"
 
-	"github.com/rnium/rhttp/internal/http/request"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
-func detectScheme(req *request.Request) string {
+func detectScheme(req *rhttp.Request) string {
 	// check headers
 	if proto, ok := req.Headers.Get("X-Forwarded-Proto"); ok && proto != "" {
 		return proto
@@ -25,7 +25,7 @@ func detectScheme(req *request.Request) string {
 	return "http"
 }
 
-func detectHost(req *request.Request) string {
+func detectHost(req *rhttp.Request) string {
 	if host, ok := req.Headers.Get("Host"); ok && host != "" {
 		return host
 	}
@@ -51,7 +51,7 @@ func normalizeHost(scheme, host string) string {
 	return host
 }
 
-func FullURL(req *request.Request) string {
+func FullURL(req *rhttp.Request) string {
 	scheme := detectScheme(req)
 	host := detectHost(req)
 	host = normalizeHost(scheme, host)

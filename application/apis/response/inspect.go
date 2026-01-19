@@ -1,8 +1,8 @@
 package response
 
-import "github.com/rnium/rhttp/internal/http/headers"
+import "github.com/rnium/rhttp/pkg/rhttp"
 
-func hasHeader(h *headers.Headers, name string) bool {
+func hasHeader(h *rhttp.Headers, name string) bool {
 	_, exists := h.Get(name)
 	return exists
 }

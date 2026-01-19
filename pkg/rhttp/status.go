@@ -1,4 +1,4 @@
-package response
+package rhttp
 
 const (
 	StatusOK                          = 200 // RFC 9110, 15.3.1

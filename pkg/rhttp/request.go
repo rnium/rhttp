@@ -1,14 +1,11 @@
-package request
+package rhttp
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net"
 	"strconv"
 	"strings"
-
-	"github.com/rnium/rhttp/internal/http/headers"
 )
 
 type ParserState int8
@@ -23,13 +20,37 @@ const (
 	parserError
 )
 
-var ErrMalformedRequestLine = fmt.Errorf("malformed request line")
-var ErrMalformedFieldLine = fmt.Errorf("malformed field line")
-var ErrMalformedFieldValue = fmt.Errorf("malformed field value")
+type RequestLine struct {
+	Method  string
+	Target  string
+	Version string
+}
+
+func (rl *RequestLine) parseRequestLine(data []byte) (int, error) {
+	sep := []byte(SEPARATOR)
+	sepIdx := bytes.Index(data, sep)
+	if sepIdx == -1 {
+		return 0, nil
+	}
+	elements_data := bytes.Split(data[:sepIdx], []byte(" "))
+	if len(elements_data) != 3 {
+		return 0, ErrMalformedRequestLine
+	}
+	rl.Method = string(elements_data[0])
+	rl.Target = string(elements_data[1])
+	rl.Version = string(elements_data[2])
+	return sepIdx + len(sep), nil
+}
+
+type Params map[string]string
+
+func NewParams() Params {
+	return make(Params)
+}
 
 type Request struct {
 	RequestLine   *RequestLine
-	Headers       *headers.Headers
+	Headers       *Headers
 	Body          []byte
 	state         ParserState
 	contentLength int
@@ -42,10 +63,51 @@ func newRequest(conn *net.Conn) *Request {
 	return &Request{
 		state:       parserInit,
 		RequestLine: &RequestLine{},
-		Headers:     headers.NewHeaders(),
+		Headers:     NewHeaders(),
 		Body:        nil,
-		conn: conn,
+		conn:        conn,
 	}
+}
+
+func (r *Request) SetAllParams(params Params, query_params Params) {
+	r.params = params
+	r.query_params = query_params
+}
+
+func (r *Request) Param(name string) (string, bool) {
+	value, ok := r.params[name]
+	return value, ok
+}
+
+func (r *Request) QParam(name string) (string, bool) {
+	value, ok := r.query_params[name]
+	return value, ok
+}
+
+func (r *Request) QParamForEach(f func(name, value string)) {
+	for name, val := range r.query_params {
+		f(name, val)
+	}
+}
+
+func (req *Request) RemoteAddr() net.Addr {
+	return (*req.conn).RemoteAddr()
+}
+
+func (req *Request) LocalAddr() net.Addr {
+	return (*req.conn).LocalAddr()
+}
+
+func (req *Request) Conn() net.Conn {
+	return *req.conn
+}
+
+func (req *Request) FormData() (*FormData, error) {
+	if req == nil {
+		return nil, ErrNoFormData
+	}
+	ctype, _ := req.Headers.Get("content-type")
+	return GetFormData(ctype, req.Body)
 }
 
 func (r *Request) done() bool {

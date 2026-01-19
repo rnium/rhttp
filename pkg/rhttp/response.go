@@ -1,27 +1,26 @@
-package response
+package rhttp
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 
-	"github.com/rnium/rhttp/internal/http/headers"
-	"github.com/rnium/rhttp/internal/http/request"
 )
 
-var ErrResponseClosed = fmt.Errorf("response closed")
-var ErrWriteFailed = fmt.Errorf("error while writing to connection")
+
 
 const CRLF = "\r\n"
 
 type Response struct {
 	StatusCode int
-	Headers    *headers.Headers
+	Headers    *Headers
 	body       []byte
 	reader     io.Reader // If reader is set response will be chunked
 	finished   bool
 }
 
-func NewResponse(StatusCode int, body []byte, extra_headers *headers.Headers) *Response {
+func NewResponse(StatusCode int, body []byte, extra_headers *Headers) *Response {
 	headers := getResponseHeaders(extra_headers)
 	_ = headers.Set("content-length", fmt.Sprint(len(body)))
 	res := &Response{
@@ -32,8 +31,8 @@ func NewResponse(StatusCode int, body []byte, extra_headers *headers.Headers) *R
 	return res
 }
 
-func getResponseHeaders(extra_headers *headers.Headers) *headers.Headers {
-	headers := headers.GetDefaultResponseHeaders()
+func getResponseHeaders(extra_headers *Headers) *Headers{
+	headers := GetDefaultResponseHeaders()
 	if extra_headers != nil {
 		extra_headers.ForEach(func(name, value string) {
 			if _, exists := headers.Get(name); exists {
@@ -46,7 +45,7 @@ func getResponseHeaders(extra_headers *headers.Headers) *headers.Headers {
 	return headers
 }
 
-func writeStatusLine(conn io.Writer, StatusCode int, request *request.Request) (int, error) {
+func writeStatusLine(conn io.Writer, StatusCode int, request *Request) (int, error) {
 	statusMsg, ok := statusMessage[StatusCode]
 	var statusLine string
 	if ok {
@@ -57,7 +56,7 @@ func writeStatusLine(conn io.Writer, StatusCode int, request *request.Request) (
 	return conn.Write([]byte(statusLine))
 }
 
-func writeHeaders(conn io.Writer, headers *headers.Headers) (int, error) {
+func writeHeaders(conn io.Writer, headers *Headers) (int, error) {
 	var headers_payload []byte
 	headers.ForEach(func(name, value string) {
 		headers_payload = fmt.Appendf(headers_payload, "%s: %s%s", name, value, CRLF)
@@ -70,7 +69,7 @@ func writeBody(conn io.Writer, p []byte) (int, error) {
 	return conn.Write(p)
 }
 
-func (res *Response) WriteResponse(conn io.Writer, request *request.Request) (n int, err error) {
+func (res *Response) WriteResponse(conn io.Writer, request *Request) (n int, err error) {
 	defer func() {
 		if !res.finished {
 			res.finished = true
@@ -109,5 +108,63 @@ func (res *Response) WriteResponse(conn io.Writer, request *request.Request) (n 
 		}
 		n += n_body
 	}
+	return
+}
+
+func NewChunkedResponse(StatusCode int, reader io.Reader, extra_headers *Headers) *Response {
+	headers := getResponseHeaders(extra_headers)
+	_ = headers.Set("Transfer-Encoding", "chunked")
+	_ = headers.Set("Trailer", "x-content-sha256, x-content-length")
+	res := &Response{
+		StatusCode: StatusCode,
+		Headers:    headers,
+		reader:     reader,
+	}
+	return res
+}
+
+func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
+	var body []byte
+	var errored bool
+	for {
+		buf := make([]byte, 512)
+		n_read, err := res.reader.Read(buf)
+		if err != nil {
+			break
+		}
+		if n_read > 0 {
+			chunk := buf[:n_read]
+			body = append(body, chunk...)
+			n_body, err := writeBody(conn, fmt.Appendf(nil, "%x%s", n_read, CRLF))
+			if err != nil {
+				errored = true
+				break
+			}
+			n += n_body
+			n_body, err = writeBody(conn, fmt.Append(chunk, CRLF))
+			if err != nil {
+				errored = true
+				break
+			}
+			n += n_body
+		}
+	}
+	if errored {
+		return
+	}
+	n_body, err := writeBody(conn, fmt.Appendf(nil, "0%s", CRLF))
+	if err != nil {
+		return
+	}
+	n += n_body
+	trailers := NewHeaders()
+	digest := sha256.Sum256(body)
+	_ = trailers.Set("x-content-sha256", hex.EncodeToString(digest[:]))
+	_ = trailers.Set("x-content-length", fmt.Sprint(len(body)))
+	n_trailer, err := writeHeaders(conn, trailers)
+	if err != nil {
+		return n, err
+	}
+	n += n_trailer
 	return
 }

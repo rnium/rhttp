@@ -1,4 +1,4 @@
-package headers
+package rhttp
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func TestToken(t *testing.T) {
 	assert.NoError(t, validateToken("content-length"))
 	assert.ErrorIs(t, validateToken("content-(length)"), ErrInvalidToken)
@@ -16,7 +15,6 @@ func TestToken(t *testing.T) {
 	assert.ErrorIs(t, validateToken(""), ErrEmptyToken)
 	assert.ErrorIs(t, validateToken("content length"), ErrInvalidToken)
 }
-
 
 func TestHeaders(t *testing.T) {
 	h := NewHeaders()
@@ -47,7 +45,7 @@ func TestHeaders(t *testing.T) {
 	// remove
 	h.Remove("foo")
 	_, ok = h.Get("foo")
-	assert.False(t, ok) 
+	assert.False(t, ok)
 }
 
 func TestHeadersForEach(t *testing.T) {
@@ -55,7 +53,7 @@ func TestHeadersForEach(t *testing.T) {
 	headers_test_data := [][2]string{
 		{"content-type", "application/json"},
 		{"server", "rhttp"},
-		{"content-length", "512"}, 
+		{"content-length", "512"},
 	}
 	formatter := func(name, val string) string {
 		return fmt.Sprintf("%s: %s\r\n", name, val)

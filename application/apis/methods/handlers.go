@@ -1,12 +1,11 @@
 package methods
 
 import (
-	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/http/response"
 	"github.com/rnium/rhttp/internal/respond"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
-func handleMethod(r *request.Request) *response.Response {
+func handleMethod(r *rhttp.Request) *rhttp.Response {
 	var payload any
 	if isReadMethod(r.RequestLine.Method) {
 		payload = buildReadData(r)

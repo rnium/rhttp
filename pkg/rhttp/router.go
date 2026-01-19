@@ -1,11 +1,12 @@
-package router
+package rhttp
 
 import (
 	"fmt"
+	"net/url"
 	"slices"
+	"strings"
+	"unicode"
 
-	"github.com/rnium/rhttp/internal/http/request"
-	"github.com/rnium/rhttp/internal/http/response"
 )
 
 const MethodGet = "GET" // methods are case sensitive, RFC 9110#section-9.1-5
@@ -14,7 +15,7 @@ const MethodPut = "PUT"
 const MethodPatch = "PATCH"
 const MethodDelete = "DELETE"
 
-type Handler func(*request.Request) *response.Response
+type Handler func(*Request) *Response
 
 type View struct {
 	handler Handler
@@ -38,7 +39,7 @@ func NewRouter() *Router {
 	}
 }
 
-func (r *Router) getView(target string) (*View, request.Params) {
+func (r *Router) getView(target string) (*View, Params) {
 	node, params := r.findTrailerNode(target)
 	if node == nil || node.view == nil {
 		return nil, params
@@ -47,16 +48,66 @@ func (r *Router) getView(target string) (*View, request.Params) {
 	return node.view, params
 }
 
-func (r *Router) GetHandler(request *request.Request) Handler {
+// helpers
+var ErrInvalidHttpTarget = fmt.Errorf("invalid http target")
+
+func validateTarget(target string) error {
+	for _, c := range target {
+		switch {
+		case unicode.IsLetter(c) || unicode.IsDigit(c):
+		case strings.ContainsRune("*./-_:", c):
+		default:
+			return ErrInvalidHttpTarget
+		}
+	}
+	return nil
+}
+
+func NewErrorHandler(statusCode int) Handler {
+	return func(r *Request) *Response {
+		return ErrorResponseHTML(statusCode)
+	}
+}
+
+func parseTarget(target string) (string, Params) {
+	parts := strings.SplitN(target, "?", 2)
+	if len(parts) == 1 {
+		return parts[0], nil
+	}
+
+	queryParams := NewParams()
+
+	for pair := range strings.SplitSeq(parts[1], "&") {
+		if pair == "" {
+			continue
+		}
+
+		key, val, found := strings.Cut(pair, "=")
+		if !found {
+			continue
+		}
+
+		k, err1 := url.QueryUnescape(key)
+		v, err2 := url.QueryUnescape(val)
+		if err1 != nil || err2 != nil {
+			continue
+		}
+
+		queryParams[k] = v
+	}
+	return parts[0], queryParams
+}
+
+func (r *Router) GetHandler(request *Request) Handler {
 	rl := request.RequestLine
 	path, query_params := parseTarget(rl.Target)
 	view, params := r.getView(path)
 	request.SetAllParams(params, query_params)
 	if view == nil {
-		return NewErrorHandler(response.StatusNotFound)
+		return NewErrorHandler(StatusNotFound)
 	}
 	if !slices.Contains(view.methods, rl.Method) {
-		return NewErrorHandler(response.StatusMethodNotAllowed)
+		return NewErrorHandler(StatusMethodNotAllowed)
 	}
 	return view.handler
 }

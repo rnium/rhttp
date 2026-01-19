@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/rnium/rhttp/internal/build"
-	"github.com/rnium/rhttp/internal/http/request"
 	"github.com/rnium/rhttp/internal/inspect"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
 type Args map[string]string
@@ -31,7 +31,7 @@ type WriteResponseData struct {
 	Url     string         `json:"url"`
 }
 
-func buildReadData(req *request.Request) *ReadResponseData {
+func buildReadData(req *rhttp.Request) *ReadResponseData {
 	rd := &ReadResponseData{
 		Args:    make(Args),
 		Headers: make(Headers),
@@ -48,7 +48,7 @@ func buildReadData(req *request.Request) *ReadResponseData {
 	return rd
 }
 
-func buildWriteData(req *request.Request) *WriteResponseData {
+func buildWriteData(req *rhttp.Request) *WriteResponseData {
 	wd := &WriteResponseData{
 		Args:    make(Args),
 		Files:   make(Files),

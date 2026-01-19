@@ -1,16 +1,14 @@
-package response
+package rhttp
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/rnium/rhttp/internal/http/headers"
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestNewResponse(t *testing.T) {
-	headers := headers.NewHeaders()
+	headers := NewHeaders()
 	_ = headers.Set("content-type", "text/html")
 	_ = headers.Set("cache-control", "public, max-age=31536000, immutable")
 	res := NewResponse(StatusOK, []byte("foobar"), headers)

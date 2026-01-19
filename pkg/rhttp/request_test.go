@@ -1,10 +1,9 @@
-package request
+package rhttp
 
 import (
 	"io"
 	"testing"
 
-	"github.com/rnium/rhttp/internal/http/headers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -65,7 +64,7 @@ func TestRequestHeaders(t *testing.T) {
 	require.NoError(t, err)
 	cr = newChunkedReader([]byte("GET hello/ HTTP1.1\r\nhost localhost:80\r\n\r\n"))
 	_, err = GetRequest(cr)
-	assert.ErrorIs(t, err, headers.ErrInvalidToken)
+	assert.ErrorIs(t, err, ErrInvalidToken)
 
 	cr = newChunkedReader([]byte("GET hello/ HTTP1.1\r\nhost\r\n\r\n"))
 	_, err = GetRequest(cr)
