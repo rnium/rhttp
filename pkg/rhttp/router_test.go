@@ -8,7 +8,7 @@ import (
 
 func demoHandler(request *Request) *Response {
 	p := []byte("hello world")
-	return NewResponse(StatusOK, p, nil)
+	return NewResponse(StatusOK, p)
 }
 
 func TestRouter(t *testing.T) {

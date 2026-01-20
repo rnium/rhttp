@@ -15,7 +15,7 @@ func JSON(status int, payload any) *rhttp.Response {
 		)
 	}
 
-	headers := rhttp.NewHeaders()
-	_ = headers.Set("Content-Type", "application/json")
-	return rhttp.NewResponse(status, data, headers)
+	res := rhttp.NewResponse(status, data)
+	_ = res.SetHeader("Content-Type", "application/json")
+	return res
 }

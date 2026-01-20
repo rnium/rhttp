@@ -8,9 +8,9 @@ import (
 
 func healthCheck(r *rhttp.Request) *rhttp.Response {
 	p := []byte("<h1>Everything working fine</h1>")
-	headers := rhttp.NewHeaders()
-	_ = headers.Set("content-type", "text/html")
-	return rhttp.NewResponse(rhttp.StatusOK, p, headers)
+	res := rhttp.NewResponse(rhttp.StatusOK, p)
+	_ = res.SetHeader("content-type", "text/html")
+	return res
 }
 
 func index(r *rhttp.Request) *rhttp.Response {
@@ -18,7 +18,8 @@ func index(r *rhttp.Request) *rhttp.Response {
 	if err != nil {
 		panic(err)
 	}
-	headers := rhttp.NewHeaders()
-	_ = headers.Set("content-type", "text/html")
-	return rhttp.NewChunkedResponse(rhttp.StatusOK, f, headers)
+
+	res := rhttp.NewChunkedResponse(rhttp.StatusOK, f)
+	_ = res.SetHeader("Content-Type", "text/html")
+	return res
 }

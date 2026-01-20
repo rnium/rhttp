@@ -6,13 +6,13 @@ import (
 )
 
 func errorResponse(statusCode int, message string) *Response {
-	headers := NewHeaders()
-	_ = headers.Set("content-type", "text/html")
-	return NewResponse(
+	
+	res := NewResponse(
 		statusCode,
 		[]byte(message),
-		headers,
 	)
+	_ = res.SetHeader("content-type", "text/html")
+	return res
 }
 
 var Response500 = func(err error) *Response {

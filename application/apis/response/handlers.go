@@ -15,7 +15,13 @@ func cache(r *rhttp.Request) *rhttp.Response {
 		payload = buildReadData(r)
 	}
 	if payload == nil {
-		return rhttp.NewResponse(statusCode, nil, nil)
+		return rhttp.NewResponse(statusCode, nil)
 	}
 	return respond.JSON(statusCode, payload)
 }
+
+
+// func setCacheCtrl(r *rhttp.Request) *rhttp.Response {
+// 	val, ok := r.Param("value")
+	
+// }

@@ -12,6 +12,7 @@ var ErrReadingFileData = errors.New("error while reading filedata")
 // Headers
 var ErrInvalidToken = errors.New("token contains invalid characters")
 var ErrEmptyToken = errors.New("token is empty")
+var ErrNonEditableHeader = errors.New("this header is not editable")
 
 // Request
 var ErrMalformedRequestLine = errors.New("malformed request line")

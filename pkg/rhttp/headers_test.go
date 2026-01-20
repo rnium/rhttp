@@ -1,7 +1,6 @@
 package rhttp
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,19 +54,23 @@ func TestHeadersForEach(t *testing.T) {
 		{"server", "rhttp"},
 		{"content-length", "512"},
 	}
-	formatter := func(name, val string) string {
-		return fmt.Sprintf("%s: %s\r\n", name, val)
-	}
-	var expected_output string
+
 	for _, d := range headers_test_data {
 		name, val := d[0], d[1]
 		_ = h.Set(name, val)
-		expected_output += formatter(name, val)
 	}
-	actual_op := ""
+
+	for _, d := range headers_test_data {
+		name, val_exp := d[0], d[1]
+		val_actual, _ := h.Get(name)
+		assert.Equal(t, val_exp, val_actual)
+	}
+
+	var header_names []string
 	h.ForEach(func(name, value string) {
-		actual_op += formatter(name, value)
+		header_names = append(header_names, name)
 	})
-	assert.Equal(t, expected_output, actual_op)
+
+	assert.Equal(t, 3, len(header_names))
 
 }

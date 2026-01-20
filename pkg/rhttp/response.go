@@ -5,44 +5,54 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-
+	"slices"
+	"strings"
 )
-
-
 
 const CRLF = "\r\n"
 
+var nonEditableResponseHeaders = []string{
+	"content-length",
+	"transfer-encoding",
+	"connection",
+	"keep-alive",
+	"upgrade",
+	"trailer",
+	"date",
+	"server",
+	"via",
+}
+
 type Response struct {
 	StatusCode int
-	Headers    *Headers
+	headers    *Headers
 	body       []byte
 	reader     io.Reader // If reader is set response will be chunked
 	finished   bool
 }
 
-func NewResponse(StatusCode int, body []byte, extra_headers *Headers) *Response {
-	headers := getResponseHeaders(extra_headers)
+func NewResponse(StatusCode int, body []byte) *Response {
+	headers := GetDefaultResponseHeaders()
 	_ = headers.Set("content-length", fmt.Sprint(len(body)))
 	res := &Response{
 		StatusCode: StatusCode,
-		Headers:    headers,
+		headers:    headers,
 		body:       body,
 	}
 	return res
 }
 
-func getResponseHeaders(extra_headers *Headers) *Headers{
-	headers := GetDefaultResponseHeaders()
-	if extra_headers != nil {
-		extra_headers.ForEach(func(name, value string) {
-			if _, exists := headers.Get(name); exists {
-				_, _ = headers.Replace(name, value)
-			} else {
-				_ = headers.Set(name, value)
-			}
-		})
+func (r *Response) SetHeader(name, value string) error {
+	if slices.Contains(nonEditableResponseHeaders, strings.ToLower(name)) {
+		return ErrNonEditableHeader
 	}
-	return headers
+	var err error
+	if _, exists := r.headers.Get(name); exists {
+		err, _ = r.headers.Replace(name, value)
+	} else {
+		err = r.headers.Set(name, value)
+	}
+	return err
 }
 
 func writeStatusLine(conn io.Writer, StatusCode int, request *Request) (int, error) {
@@ -88,7 +98,7 @@ func (res *Response) WriteResponse(conn io.Writer, request *Request) (n int, err
 	n += n_statusline
 
 	// Write Headers
-	n_fieldline, err := writeHeaders(conn, res.Headers)
+	n_fieldline, err := writeHeaders(conn, res.headers)
 	if err != nil {
 		return n, err
 	}
@@ -111,13 +121,13 @@ func (res *Response) WriteResponse(conn io.Writer, request *Request) (n int, err
 	return
 }
 
-func NewChunkedResponse(StatusCode int, reader io.Reader, extra_headers *Headers) *Response {
-	headers := getResponseHeaders(extra_headers)
+func NewChunkedResponse(StatusCode int, reader io.Reader) *Response {
+	headers := GetDefaultResponseHeaders()
 	_ = headers.Set("Transfer-Encoding", "chunked")
 	_ = headers.Set("Trailer", "x-content-sha256, x-content-length")
 	res := &Response{
 		StatusCode: StatusCode,
-		Headers:    headers,
+		headers:    headers,
 		reader:     reader,
 	}
 	return res
