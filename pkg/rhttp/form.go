@@ -7,20 +7,12 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/url"
-
-	"github.com/rnium/rhttp/internal/build"
 )
-
-
 
 type File struct {
 	Filename    string
 	ContentType string
 	Data        []byte
-}
-
-func (f *File) ToBase64Data() string {
-	return build.ToBase64Data(f.ContentType, f.Data)
 }
 
 type FormData struct {
