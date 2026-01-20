@@ -1,4 +1,4 @@
-package build
+package codecs
 
 import (
 	"encoding/base64"

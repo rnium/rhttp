@@ -3,7 +3,7 @@ package methods
 import (
 	"encoding/json"
 
-	"github.com/rnium/rhttp/internal/build"
+	"github.com/rnium/rhttp/internal/codecs"
 	"github.com/rnium/rhttp/internal/inspect"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
@@ -66,7 +66,7 @@ func buildWriteData(req *rhttp.Request) *WriteResponseData {
 	if formdata != nil {
 		wd.Form = formdata.Fields
 		for field, file := range formdata.Files {
-			wd.Files[field] = file.ToBase64Data()
+			wd.Files[field] = codecs.ToBase64Data(file.ContentType, file.Data)
 		}
 	} else if contentType == "application/json" {
 		wd.Data = string(req.Body)
@@ -74,7 +74,7 @@ func buildWriteData(req *rhttp.Request) *WriteResponseData {
 		_ = json.Unmarshal(req.Body, &jsonData)
 		wd.Json = jsonData
 	} else if len(req.Body) > 0 {
-		wd.Data = build.ToBase64Data(contentType, req.Body)
+		wd.Data = codecs.ToBase64Data(contentType, req.Body)
 	}
 	wd.Origin = inspect.ClientIP(req)
 	wd.Url = inspect.FullURL(req)
