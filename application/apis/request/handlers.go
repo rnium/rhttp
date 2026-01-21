@@ -2,20 +2,19 @@ package request
 
 import (
 	"github.com/rnium/rhttp/internal/inspect"
-	"github.com/rnium/rhttp/internal/respond"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
 func viewHeaders(r *rhttp.Request) *rhttp.Response {
 	headersData := buildHeadersData(r.Headers)
-	return respond.JSON(200, headersData)
+	return rhttp.ResponseJSON(200, headersData)
 }
 
 func viewIp(r *rhttp.Request) *rhttp.Response {
 	data := make(map[string]string)
 	data["origin"] = inspect.ClientIP(r)
 
-	return respond.JSON(200, data)
+	return rhttp.ResponseJSON(200, data)
 }
 
 func viewUserAgent(r *rhttp.Request) *rhttp.Response {
@@ -26,5 +25,5 @@ func viewUserAgent(r *rhttp.Request) *rhttp.Response {
 	} else {
 		data["user-agent"] = nil
 	}
-	return respond.JSON(200, data)
+	return rhttp.ResponseJSON(200, data)
 }

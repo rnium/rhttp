@@ -1,7 +1,6 @@
 package methods
 
 import (
-	"github.com/rnium/rhttp/internal/respond"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
@@ -12,5 +11,5 @@ func handleMethod(r *rhttp.Request) *rhttp.Response {
 	} else {
 		payload = buildWriteData(r)
 	}
-	return respond.JSON(200, payload)
+	return rhttp.ResponseJSON(200, payload)
 }

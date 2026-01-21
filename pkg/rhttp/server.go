@@ -60,7 +60,7 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 	handler := s.router.GetHandler(req)
 	res, err := s.runHandler(handler, req)
 	if err != nil {
-		res = Response500(err)
+		res = response500(err)
 	}
 	_, err = res.WriteResponse(conn, req)
 	if err != nil {

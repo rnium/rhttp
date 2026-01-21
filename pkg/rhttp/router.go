@@ -63,9 +63,9 @@ func validateTarget(target string) error {
 	return nil
 }
 
-func NewErrorHandler(statusCode int) Handler {
+func newErrorHandler(statusCode int) Handler {
 	return func(r *Request) *Response {
-		return ErrorResponseHTML(statusCode)
+		return ErrorResponseJSON(statusCode)
 	}
 }
 
@@ -104,10 +104,10 @@ func (r *Router) GetHandler(request *Request) Handler {
 	view, params := r.getView(path)
 	request.SetAllParams(params, query_params)
 	if view == nil {
-		return NewErrorHandler(StatusNotFound)
+		return newErrorHandler(StatusNotFound)
 	}
 	if !slices.Contains(view.methods, rl.Method) {
-		return NewErrorHandler(StatusMethodNotAllowed)
+		return newErrorHandler(StatusMethodNotAllowed)
 	}
 	return view.handler
 }

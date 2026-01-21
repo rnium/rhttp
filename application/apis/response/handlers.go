@@ -3,7 +3,6 @@ package response
 import (
 	"fmt"
 
-	"github.com/rnium/rhttp/internal/respond"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
@@ -19,7 +18,7 @@ func cache(r *rhttp.Request) *rhttp.Response {
 	if payload == nil {
 		return rhttp.NewResponse(statusCode, nil)
 	}
-	return respond.JSON(statusCode, payload)
+	return rhttp.ResponseJSON(statusCode, payload)
 }
 
 func setCacheCtrl(r *rhttp.Request) *rhttp.Response {
@@ -28,10 +27,10 @@ func setCacheCtrl(r *rhttp.Request) *rhttp.Response {
 		payload := map[string]string{
 			"message": "value should be an integer",
 		}
-		return respond.JSON(400, payload)
+		return rhttp.ResponseJSON(400, payload)
 	}
 	payload := buildReadData(r)
-	res := respond.JSON(200, payload)
+	res := rhttp.ResponseJSON(200, payload)
 	_ = res.SetHeader("cache-control", fmt.Sprintf("public, max-age=%s", value))
 	return res
 }
