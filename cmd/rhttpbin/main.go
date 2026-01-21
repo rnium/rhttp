@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/rnium/rhttp/application"
+	"github.com/rnium/rhttp/internal/application"
 )
 
 const PORT uint16 = 8000

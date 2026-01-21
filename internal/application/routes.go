@@ -1,8 +1,8 @@
 package application
 
 import (
-	"github.com/rnium/rhttp/application/apis"
-	"github.com/rnium/rhttp/application/pages"
+	"github.com/rnium/rhttp/internal/application/apis"
+	"github.com/rnium/rhttp/internal/application/pages"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
