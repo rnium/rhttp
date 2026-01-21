@@ -38,7 +38,7 @@ func newChunkedReader(data []byte) *chunkedReader {
 
 func TestRequest(t *testing.T) {	
 	cr := newChunkedReader([]byte("GET hello/ HTTP1.1\r\n\r\n"))
-	rq, err := GetRequest(cr)
+	rq, err := getRequest(cr)
 	require.NoError(t, err)
 	assert.Equal(t, rq.RequestLine.Method, "GET")
 	assert.Equal(t, rq.RequestLine.Target, "hello/")
@@ -49,7 +49,7 @@ func TestRequest(t *testing.T) {
 
 func TestRequestHeaders(t *testing.T) {
 	cr := newChunkedReader([]byte("GET hello/ HTTP1.1\r\ncontent-length: 5\r\naccept: text/plain\r\naccept: application/json\r\n\r\nHello\r\n"))
-	rq, err := GetRequest(cr)
+	rq, err := getRequest(cr)
 	require.NoError(t, err)
 	
 	clength, _ := rq.Headers.Get("content-length")
@@ -60,13 +60,13 @@ func TestRequestHeaders(t *testing.T) {
 	assert.False(t, ok)
 	assert.Equal(t, string(rq.Body), "Hello")
 	cr = newChunkedReader([]byte("GET hello/ HTTP1.1\r\nhost: localhost:80\r\n\r\n"))
-	_, err = GetRequest(cr)
+	_, err = getRequest(cr)
 	require.NoError(t, err)
 	cr = newChunkedReader([]byte("GET hello/ HTTP1.1\r\nhost localhost:80\r\n\r\n"))
-	_, err = GetRequest(cr)
+	_, err = getRequest(cr)
 	assert.ErrorIs(t, err, ErrInvalidToken)
 
 	cr = newChunkedReader([]byte("GET hello/ HTTP1.1\r\nhost\r\n\r\n"))
-	_, err = GetRequest(cr)
+	_, err = getRequest(cr)
 	assert.ErrorIs(t, err, ErrMalformedFieldLine)
 }

@@ -84,14 +84,14 @@ func (h *Headers) Count() int {
 	return len(h.headers)
 }
 
-func NewHeaders() *Headers {
+func newHeaders() *Headers {
 	return &Headers{
 		headers: make(map[string]*Header),
 	}
 }
 
 func GetDefaultResponseHeaders() *Headers {
-	headers := NewHeaders()
+	headers := newHeaders()
 	defaults := map[string]string{
 		"content-type": "text/plain",
 		"server":       "rhttp",

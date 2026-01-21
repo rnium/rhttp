@@ -52,17 +52,17 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 		conn.Close()
 		s.wg.Done()
 	}()
-	req, err := GetRequest(conn)
+	req, err := getRequest(conn)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	handler := s.router.GetHandler(req)
+	handler := s.router.getHandler(req)
 	res, err := s.runHandler(handler, req)
 	if err != nil {
 		res = response500(err)
 	}
-	_, err = res.WriteResponse(conn, req)
+	_, err = res.writeResponse(conn, req)
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -20,10 +20,6 @@ type FormData struct {
 	Files  map[string]*File
 }
 
-// func (fd *FormData) AddField(name, value string) {
-// 	fd.Fields[name] = value
-// }
-
 func newFormData() *FormData {
 	return &FormData{
 		Fields: make(map[string]string),
@@ -31,7 +27,7 @@ func newFormData() *FormData {
 	}
 }
 
-func GetFormData(contentType string, body []byte) (*FormData, error) {
+func getFormData(contentType string, body []byte) (*FormData, error) {
 	mediaType, params, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		return nil, err

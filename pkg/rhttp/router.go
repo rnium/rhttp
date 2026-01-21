@@ -17,20 +17,20 @@ const MethodDelete = "DELETE"
 
 type Handler func(*Request) *Response
 
-type View struct {
+type view struct {
 	handler Handler
 	methods []string
 }
 
-func NewView(handler Handler, methods ...string) *View {
-	return &View{
+func newView(handler Handler, methods ...string) *view {
+	return &view{
 		handler: handler,
 		methods: methods,
 	}
 }
 
 type Router struct {
-	rootNode *Node
+	rootNode *node
 }
 
 func NewRouter() *Router {
@@ -39,7 +39,7 @@ func NewRouter() *Router {
 	}
 }
 
-func (r *Router) getView(target string) (*View, Params) {
+func (r *Router) getView(target string) (*view, Params) {
 	node, params := r.findTrailerNode(target)
 	if node == nil || node.view == nil {
 		return nil, params
@@ -98,7 +98,7 @@ func parseTarget(target string) (string, Params) {
 	return parts[0], queryParams
 }
 
-func (r *Router) GetHandler(request *Request) Handler {
+func (r *Router) getHandler(request *Request) Handler {
 	rl := request.RequestLine
 	path, query_params := parseTarget(rl.Target)
 	view, params := r.getView(path)
@@ -120,7 +120,7 @@ func (r *Router) addView(target, method string, handler Handler) {
 	view, _ := r.getView(target)
 	if view == nil {
 		node := r.insertUrl(target)
-		node.view = NewView(handler, method)
+		node.view = newView(handler, method)
 	} else if !slices.Contains(view.methods, method) {
 		view.methods = append(view.methods, method)
 	}

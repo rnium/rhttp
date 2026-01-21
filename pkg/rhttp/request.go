@@ -63,7 +63,7 @@ func newRequest(conn *net.Conn) *Request {
 	return &Request{
 		state:       parserInit,
 		RequestLine: &RequestLine{},
-		Headers:     NewHeaders(),
+		Headers:     newHeaders(),
 		Body:        nil,
 		conn:        conn,
 	}
@@ -107,7 +107,7 @@ func (req *Request) FormData() (*FormData, error) {
 		return nil, ErrNoFormData
 	}
 	ctype, _ := req.Headers.Get("content-type")
-	return GetFormData(ctype, req.Body)
+	return getFormData(ctype, req.Body)
 }
 
 func (r *Request) done() bool {
@@ -190,7 +190,7 @@ outer:
 	return read, err
 }
 
-func GetRequest(conn io.Reader) (*Request, error) {
+func getRequest(conn io.Reader) (*Request, error) {
 	netConn, _ := conn.(net.Conn)
 	request := newRequest(&netConn)
 	buf := make([]byte, 1000)

@@ -42,6 +42,18 @@ func NewResponse(StatusCode int, body []byte) *Response {
 	return res
 }
 
+func NewChunkedResponse(StatusCode int, reader io.Reader) *Response {
+	headers := GetDefaultResponseHeaders()
+	_ = headers.Set("Transfer-Encoding", "chunked")
+	_ = headers.Set("Trailer", "x-content-sha256, x-content-length")
+	res := &Response{
+		StatusCode: StatusCode,
+		headers:    headers,
+		reader:     reader,
+	}
+	return res
+}
+
 func (r *Response) SetHeader(name, value string) error {
 	if slices.Contains(nonEditableResponseHeaders, strings.ToLower(name)) {
 		return ErrNonEditableHeader
@@ -79,7 +91,7 @@ func writeBody(conn io.Writer, p []byte) (int, error) {
 	return conn.Write(p)
 }
 
-func (res *Response) WriteResponse(conn io.Writer, request *Request) (n int, err error) {
+func (res *Response) writeResponse(conn io.Writer, request *Request) (n int, err error) {
 	defer func() {
 		if !res.finished {
 			res.finished = true
@@ -121,17 +133,7 @@ func (res *Response) WriteResponse(conn io.Writer, request *Request) (n int, err
 	return
 }
 
-func NewChunkedResponse(StatusCode int, reader io.Reader) *Response {
-	headers := GetDefaultResponseHeaders()
-	_ = headers.Set("Transfer-Encoding", "chunked")
-	_ = headers.Set("Trailer", "x-content-sha256, x-content-length")
-	res := &Response{
-		StatusCode: StatusCode,
-		headers:    headers,
-		reader:     reader,
-	}
-	return res
-}
+
 
 func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
 	var body []byte
@@ -167,7 +169,7 @@ func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
 		return
 	}
 	n += n_body
-	trailers := NewHeaders()
+	trailers := newHeaders()
 	digest := sha256.Sum256(body)
 	_ = trailers.Set("x-content-sha256", hex.EncodeToString(digest[:]))
 	_ = trailers.Set("x-content-length", fmt.Sprint(len(body)))

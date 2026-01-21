@@ -7,18 +7,18 @@ import (
 
 )
 
-type Node struct {
+type node struct {
 	name         string
-	childNodes   map[string]*Node
-	paramNode    *Node
-	wildcardNode *Node
-	view         *View
+	childNodes   map[string]*node
+	paramNode    *node
+	wildcardNode *node
+	view         *view
 }
 
-func newNode(name string) *Node {
-	return &Node{
+func newNode(name string) *node {
+	return &node{
 		name:       name,
-		childNodes: make(map[string]*Node),
+		childNodes: make(map[string]*node),
 	}
 }
 
@@ -33,7 +33,7 @@ func getUrlParts(url string) []string {
 
 // Splits the parts of an URL separated by forward slash (/) and inserts into the Trie as node.
 // Returns the trailing node of the url
-func (r *Router) insertUrl(target_url string) *Node {
+func (r *Router) insertUrl(target_url string) *node {
 	parts := getUrlParts(target_url)
 	curr := r.rootNode
 	for _, part := range parts {
@@ -43,7 +43,7 @@ func (r *Router) insertUrl(target_url string) *Node {
 		if next_node, exists := curr.childNodes[part]; exists {
 			curr = next_node
 		} else {
-			var node *Node
+			var node *node
 			if part == "*" {
 				if curr.wildcardNode == nil {
 					node = newNode("*")
@@ -72,7 +72,7 @@ func (r *Router) insertUrl(target_url string) *Node {
 }
 
 // Find for the trailer node of an url
-func (r *Router) findTrailerNode(target_url string) (*Node, Params) {
+func (r *Router) findTrailerNode(target_url string) (*node, Params) {
 	parts := getUrlParts(target_url)
 	params := NewParams()
 	curr := r.rootNode

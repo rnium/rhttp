@@ -16,7 +16,7 @@ func TestToken(t *testing.T) {
 }
 
 func TestHeaders(t *testing.T) {
-	h := NewHeaders()
+	h := newHeaders()
 	err := h.Set("server", "nginx")
 	require.NoError(t, err)
 	val, ok := h.Get("server")
@@ -48,7 +48,7 @@ func TestHeaders(t *testing.T) {
 }
 
 func TestHeadersForEach(t *testing.T) {
-	h := NewHeaders()
+	h := newHeaders()
 	headers_test_data := [][2]string{
 		{"content-type", "application/json"},
 		{"server", "rhttp"},
