@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: rHttpbin
+  summary: A httpbin clone in Custom Go HTTP Server
+  contact:
+    name: MSI Rony
+    email: abrony@gmail.com
+    url: https://sirony.site
+  version: 1.0.0
+  description: This is a simple httpbin clone implemented in a custom Go HTTP server. It demonstrates various HTTP features and their responses.
+tags:
+  - name: HTTP Methods
+    description: Endpoints demonstrating various HTTP methods
+  - name: Request Inspection
+    description: Endpoints for inspecting request data
+  - name: Response Inspection
+    description: Endpoints for inspecting response data
+
+paths:
+  /get:
+    get:
+      summary: Simple GET Request
+      description: Returns a simple GET response
+      tags:
+        - HTTP Methods
+      responses:
+        "200":
+          description: Successful GET response
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "This is a GET request"
+  /post:
+    post:
+      summary: Simple POST Request
+      description: Returns a simple POST response
+      tags:
+        - HTTP Methods
+      responses:
+        "200":
+          description: Successful POST response
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "This is a POST request"
+  /put:
+    put:
+      summary: Simple PUT Request
+      description: Returns a simple PUT response
+      tags:
+        - HTTP Methods
+      responses:
+        "200":
+          description: Successful PUT response
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "This is a PUT request"
+  /delete:
+    delete:     
+      summary: Simple DELETE Request
+      description: Returns a simple DELETE response
+      tags:
+        - HTTP Methods
+      responses:
+        "200":
+          description: Successful DELETE response
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "This is a DELETE request"
+  /patch:
+    patch:
+      summary: Simple PATCH Request
+      description: Returns a simple PATCH response
+      tags:
+        - HTTP Methods
+      responses:
+        "200":
+          description: Successful PATCH response  
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "This is a PATCH request"
+  /headers:
+    get:
+      summary: Request headers
+      description: Returns the request headers received by the server
+      tags:
+        - Request Inspection
+      responses:
+        "200":
+          description: Successful response containing headers
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                Accept: "*/*"
+                Host: "example.org"
+                User-Agent: "curl/7.64.1"
+  /ip:
+    get:
+      summary: Client IP
+      description: Returns the client's IP address as seen by the server
+      tags:
+        - Request Inspection
+      responses:
+        "200":
+          description: Successful response containing client IP
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  origin:
+                    type: string
+              example:
+                origin: "203.0.113.195"
+  /user-agent:
+    get:
+      summary: User-Agent
+      description: Returns the request User-Agent header
+      tags:
+        - Request Inspection
+      responses:
+        "200":
+          description: Successful response containing the User-Agent
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                user-agent: "curl/7.64.1"
+  /cache:
+    get:
+      summary: Cache information
+      description: Returns cache-related headers and information
+      tags:
+        - Response Inspection
+      responses:
+        "200":
+          description: Cache info
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                cache-control: "max-age=3600"
+  /cache/{value}:
+    get:
+      summary: Set cache duration
+      description: Sets a cache value (in seconds) and returns appropriate cache headers
+      tags:
+        - Response Inspection
+      parameters:
+        - name: value
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          description: Cache duration in seconds
+      responses:
+        "200":
+          description: Cache set
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                cache-control: "max-age=60"

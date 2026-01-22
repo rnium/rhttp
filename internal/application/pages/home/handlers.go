@@ -14,7 +14,7 @@ func healthCheck(r *rhttp.Request) *rhttp.Response {
 }
 
 func index(r *rhttp.Request) *rhttp.Response {
-	f, err := os.Open("./templates/index.html")
+	f, err := os.Open("./web/templates/index.html")
 	if err != nil {
 		panic(err)
 	}
