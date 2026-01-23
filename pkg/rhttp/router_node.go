@@ -2,9 +2,9 @@ package rhttp
 
 import (
 	"fmt"
+	"net/url"
 	"path"
 	"strings"
-
 )
 
 type node struct {
@@ -87,8 +87,9 @@ func (r *Router) findTrailerNode(target_url string) (*node, Params) {
 		}
 		// Check parameterized node
 		if curr.paramNode != nil {
+			val, _ := url.QueryUnescape(part)
 			pNode := curr.paramNode
-			params[pNode.name] = part
+			params[pNode.name] = val
 			curr = pNode
 			continue
 		}
