@@ -96,6 +96,10 @@ func (res *Response) writeResponse(conn io.Writer, request *Request) (n int, err
 		if !res.finished {
 			res.finished = true
 		}
+		closer, ok := res.reader.(io.Closer)
+		if ok {
+			closer.Close()
+		}
 	}()
 
 	if res.finished {
@@ -132,8 +136,6 @@ func (res *Response) writeResponse(conn io.Writer, request *Request) (n int, err
 	}
 	return
 }
-
-
 
 func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
 	var body []byte
