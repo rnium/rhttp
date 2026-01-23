@@ -1,8 +1,7 @@
 package home
 
 import (
-	"os"
-
+	"github.com/rnium/rhttp/internal/respond"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
@@ -14,12 +13,5 @@ func healthCheck(r *rhttp.Request) *rhttp.Response {
 }
 
 func index(r *rhttp.Request) *rhttp.Response {
-	f, err := os.Open("./web/templates/index.html")
-	if err != nil {
-		panic(err)
-	}
-
-	res := rhttp.NewChunkedResponse(rhttp.StatusOK, f)
-	_ = res.SetHeader("Content-Type", "text/html")
-	return res
+	return respond.FileResponse("./web/templates/index.html")
 }

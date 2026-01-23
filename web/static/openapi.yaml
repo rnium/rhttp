@@ -143,6 +143,16 @@ paths:
       description: Returns cache-related headers and information
       tags:
         - Response Inspection
+      parameters:
+        - name: If-Modified-Since
+          in: header
+          schema:
+            type: string
+            format: date-time
+        - name: If-None-Match
+          in: header
+          schema:
+            type: string
       responses:
         "200":
           description: Cache info
@@ -176,3 +186,30 @@ paths:
                 type: object
               example:
                 cache-control: "max-age=60"
+  /etag/{etag}:
+    get:
+      summary: Responds to If-None-Match and If-Match headers appropriately.
+      description: Returns an ETag header and handles conditional requests
+      tags:
+        - Response Inspection
+      parameters:
+        - name: etag
+          in: path
+          schema:
+            type: string
+          description: The ETag value to be returned
+        - name: If-None-Match
+          in: header
+          schema:
+            type: string
+        - name: If-Match
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Normal Response
+        "304":
+          description: Not Modified
+        "412":
+          description: Precondition Failed
