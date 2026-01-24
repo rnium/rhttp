@@ -71,3 +71,17 @@ func etagHandler(r *rhttp.Request) *rhttp.Response {
 	}
 	return statusResponse(statusCode, payload, etag)
 }
+
+
+func responseHeaders(r *rhttp.Request) *rhttp.Response {
+	resData := make(map[string]string)
+	r.QParamForEach(func(name, value string) {
+		resData[name] = value
+	})
+	resData["Content-Type"] = "application/json"
+	res := rhttp.ResponseJSON(200, resData)
+	r.QParamForEach(func(name, value string) {
+		_ = res.SetHeader(name, value)
+	})
+	return res
+}

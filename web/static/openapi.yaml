@@ -139,7 +139,7 @@ paths:
                 user-agent: "curl/7.64.1"
   /cache:
     get:
-      summary: Cache information
+      summary: Returns a 304 if an If-Modified-Since header or If-None-Match is present. Returns the same as a GET otherwise.
       description: Returns cache-related headers and information
       tags:
         - Response Inspection
@@ -164,7 +164,7 @@ paths:
                 cache-control: "max-age=3600"
   /cache/{value}:
     get:
-      summary: Set cache duration
+      summary: Sets a Cache-Control header for n seconds.
       description: Sets a cache value (in seconds) and returns appropriate cache headers
       tags:
         - Response Inspection
@@ -213,3 +213,32 @@ paths:
           description: Not Modified
         "412":
           description: Precondition Failed
+  /response-headers:
+    get:
+      summary: Returns a set of response headers from the query string.
+      description: Returns custom headers specified as query parameters
+      tags:
+        - Response Inspection
+      parameters:
+        - name: freeform
+          in: query
+          schema:
+            type: string
+          description: Custom header to include in the response (can be repeated)
+      responses:
+        "200":
+          description: Response with custom headers
+    # post:
+    #   summary: Custom Response Headers via POST
+    #   description: Returns custom headers specified in the request body
+    #   tags:
+    #     - Response Inspection
+    #   parameters:
+    #     - name: freeform
+    #       in: query
+    #       schema:
+    #         type: string
+    #       description: Custom header to include in the response (can be repeated)
+    #   responses:
+    #     "200":
+    #       description: Response with custom headers
