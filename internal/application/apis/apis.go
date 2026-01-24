@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"github.com/rnium/rhttp/internal/application/apis/dynamicdata"
 	"github.com/rnium/rhttp/internal/application/apis/methods"
 	"github.com/rnium/rhttp/internal/application/apis/request"
 	"github.com/rnium/rhttp/internal/application/apis/response"
@@ -11,4 +12,5 @@ func RegisterRoutes(r *rhttp.Router) {
 	methods.Register(r)
 	request.Register(r)
 	response.Register(r)
+	dynamicdata.Register(r)
 }

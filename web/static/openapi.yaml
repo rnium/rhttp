@@ -15,6 +15,8 @@ tags:
     description: Endpoints for inspecting request data
   - name: Response Inspection
     description: Endpoints for inspecting response data
+  - name: Dynamic Data
+    description: Generate random and dynamic data
 
 paths:
   /get:
@@ -228,17 +230,55 @@ paths:
       responses:
         "200":
           description: Response with custom headers
-    # post:
-    #   summary: Custom Response Headers via POST
-    #   description: Returns custom headers specified in the request body
-    #   tags:
-    #     - Response Inspection
-    #   parameters:
-    #     - name: freeform
-    #       in: query
-    #       schema:
-    #         type: string
-    #       description: Custom header to include in the response (can be repeated)
-    #   responses:
-    #     "200":
-    #       description: Response with custom headers
+    post:
+      summary: Custom Response Headers via POST
+      description: Returns custom headers specified as query parameters
+      tags:
+        - Response Inspection
+      parameters:
+        - name: freeform
+          in: query
+          schema:
+            type: string
+          description: Custom header to include in the response (can be repeated)
+      responses:
+        "200":
+          description: Response with custom headers
+  /base64/{value}:
+    get:
+      summary: Decodes the provided base64 string and returns the decoded value
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: value
+          in: path
+          required: true
+          default: "ckh0dHBiaW4gaXMgYXdlc29tZQ=="
+          schema:
+            type: string
+          description: Base64 encoded string
+      responses:
+        "200":
+          description: Decoded string
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Hello, World!"
+  /uuid:
+    get:
+      summary: Generates and returns a random UUID
+      tags:
+        - Dynamic Data
+      responses:
+        "200":
+          description: Generated UUID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+              example:
+                uuid: "123e4567-e89b-12d3-a456-426614174000"
