@@ -7,6 +7,7 @@ import (
 	"io"
 	"slices"
 	"strings"
+	"time"
 )
 
 const CRLF = "\r\n"
@@ -31,9 +32,24 @@ type Response struct {
 	finished   bool
 }
 
+func defaultResponseHeaders() *Headers {
+	headers := newHeaders()
+	defaults := map[string]string{
+		"server":     "rhttp",
+		"connection": "keep-alive",
+		"date":       time.Now().UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT"),
+	}
+	for name, value := range defaults {
+		_ = headers.Set(name, value)
+	}
+	return headers
+}
+
 func NewResponse(StatusCode int, body []byte) *Response {
-	headers := GetDefaultResponseHeaders()
-	_ = headers.Set("content-length", fmt.Sprint(len(body)))
+	headers := defaultResponseHeaders()
+	if body != nil {
+		_ = headers.Set("content-length", fmt.Sprint(len(body)))
+	}
 	res := &Response{
 		StatusCode: StatusCode,
 		headers:    headers,
@@ -43,7 +59,7 @@ func NewResponse(StatusCode int, body []byte) *Response {
 }
 
 func NewChunkedResponse(StatusCode int, reader io.Reader) *Response {
-	headers := GetDefaultResponseHeaders()
+	headers := defaultResponseHeaders()
 	_ = headers.Set("Transfer-Encoding", "chunked")
 	_ = headers.Set("Trailer", "x-content-sha256, x-content-length")
 	res := &Response{

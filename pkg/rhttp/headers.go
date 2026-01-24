@@ -89,16 +89,3 @@ func newHeaders() *Headers {
 		headers: make(map[string]*Header),
 	}
 }
-
-func GetDefaultResponseHeaders() *Headers {
-	headers := newHeaders()
-	defaults := map[string]string{
-		"content-type": "text/plain",
-		"server":       "rhttp",
-		"connection":   "closed",
-	}
-	for name, value := range defaults {
-		_ = headers.Set(name, value)
-	}
-	return headers
-}

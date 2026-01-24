@@ -15,9 +15,9 @@ func TestNewResponse(t *testing.T) {
 	err := res.SetHeader("Content-length", "2026")
 	assert.True(t, errors.Is(err, ErrNonEditableHeader))
 
-	assert.Equal(t, 5, res.headers.Count())
-	ctype, _ := res.headers.Get("content-type")
-	assert.Equal(t, "text/html", ctype)
+	assert.Equal(t, 6, res.headers.Count())
+	server, _ := res.headers.Get("server")
+	assert.Equal(t, "rhttp", server)
 
 	res = NewResponse(StatusOK, []byte("barbaz"))
 	assert.Equal(t, 4, res.headers.Count())
