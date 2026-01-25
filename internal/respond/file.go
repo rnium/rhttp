@@ -8,8 +8,12 @@ import (
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
-func FileResponse(path string) *rhttp.Response {
-	mimetype := mime.TypeByExtension(filepath.Ext(path))
+func getMimeFromPath(path string) string {
+	return mime.TypeByExtension(filepath.Ext(path))
+}
+
+func FileResponseChunked(path string) *rhttp.Response {
+	mimetype := getMimeFromPath(path)
 
 	file, err := os.Open(path)
 	if err != nil {
@@ -22,6 +26,24 @@ func FileResponse(path string) *rhttp.Response {
 	}
 
 	res := rhttp.NewChunkedResponse(200, file)
+	_ = res.SetHeader("Content-Type", mimetype)
+	return res
+}
+
+func FileResponse(path string) *rhttp.Response {
+	mimetype := getMimeFromPath(path)
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		switch {
+		case os.IsNotExist(err):
+			return rhttp.ResponseJSON(404, "File not found")
+		default:
+			return rhttp.ResponseJSON(500, err.Error())
+		}
+	}
+
+	res := rhttp.NewResponse(200, data)
 	_ = res.SetHeader("Content-Type", mimetype)
 	return res
 }

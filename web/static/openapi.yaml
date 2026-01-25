@@ -17,6 +17,8 @@ tags:
     description: Endpoints for inspecting response data
   - name: Dynamic Data
     description: Generate random and dynamic data
+  - name: Images
+    description: Endpoints returning image data
 
 paths:
   /get:
@@ -282,3 +284,79 @@ paths:
                     type: string
               example:
                 uuid: "123e4567-e89b-12d3-a456-426614174000"
+  /image:
+    get:
+      summary: Returns an image response
+      description: Returns an image in various formats based on the Accept header
+      produces:
+        - image/png
+        - image/jpeg
+        - image/webp
+        - image/svg+xml
+      tags:
+        - Images
+      responses:
+        "200":
+          description: Image Response
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+  /image/jpeg:
+    get:
+      summary: Returns a JPEG image
+      tags:
+        - Images
+      responses:
+        "200":
+          description: A JPEG image
+  /image/png:
+    get:
+      summary: Returns a PNG image
+      tags:
+        - Images
+      responses:
+        "200":
+          description: A PNG image
+  /image/webp:
+    get:
+      summary: Returns a WEBP image
+      tags:
+        - Images
+      responses:
+        "200":
+          description: A WEBP image
+  /image/svg:
+    get:  
+      summary: Returns an SVG image
+      tags:
+        - Images
+      responses:
+        "200":
+          description: An SVG image
+  /image/gif:
+    get:
+      summary: Returns a GIF image
+      tags:
+        - Images
+      responses:
+        "200":
+          description: A GIF image
+          
