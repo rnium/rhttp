@@ -284,6 +284,28 @@ paths:
                     type: string
               example:
                 uuid: "123e4567-e89b-12d3-a456-426614174000"
+  /bytes/{n}:
+    get:
+      summary: Returns n random bytes
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: n
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+          description: Number of random bytes to return (1-102400)
+      responses:
+        "200":
+          description: Random bytes
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
   /image:
     get:
       summary: Returns an image response

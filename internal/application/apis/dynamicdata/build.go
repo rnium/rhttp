@@ -5,9 +5,14 @@ import (
 	"fmt"
 )
 
-func buildUUID() string {
-	b := make([]byte, 16)
+func nRandomBytes(n int) []byte {
+	b := make([]byte, n)
 	_, _ = rand.Read(b)
+	return b
+}
+
+func buildUUID() string {
+	b := nRandomBytes(16)
 
 	// Set version (4) and variant (RFC 4122)
 	b[6] = (b[6] & 0x0f) | 0x40

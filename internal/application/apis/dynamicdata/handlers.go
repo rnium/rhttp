@@ -3,6 +3,7 @@ package dynamicdata
 import (
 	"encoding/base64"
 	"fmt"
+	"strconv"
 
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
@@ -29,3 +30,24 @@ func uuidGenHandler(_ *rhttp.Request) *rhttp.Response {
 	}
 	return rhttp.ResponseJSON(200, data)
 }
+
+func bytesHandler(r *rhttp.Request) *rhttp.Response {
+	value, _ := r.Param("n")
+	n, err := strconv.Atoi(value)
+	if err != nil  {
+		rhttp.ResponseJSON(200, "expected value to be integer")
+	}
+	n = min(n, 102400)
+	data := nRandomBytes(n)
+	res := rhttp.NewResponse(200, data)
+	res.SetHeader("Content-Type", "application/octet-stream")
+	return res
+}
+
+// func delayHandler(r *rhttp.Request) *rhttp.Response {
+// 	value, _ := r.Param("delay")
+// 	delay, err := strconv.Atoi(value)
+// 	if err != nil  {
+// 		rhttp.ResponseJSON(200, "expected value to be integer")
+// 	}
+// }
