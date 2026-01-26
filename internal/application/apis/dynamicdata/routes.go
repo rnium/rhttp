@@ -12,4 +12,5 @@ func Register(r *rhttp.Router) {
 	r.Put("/delay/:delay", delayHandler)
 	r.Patch("/delay/:delay", delayHandler)
 	r.Delete("/delay/:delay", delayHandler)
+	r.Get("/drip", dripHandler)
 }

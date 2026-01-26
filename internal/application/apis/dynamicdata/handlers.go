@@ -43,7 +43,7 @@ func bytesHandler(r *rhttp.Request) *rhttp.Response {
 	n = min(n, 102400)
 	data := nRandomBytes(n)
 	res := rhttp.NewResponse(200, data)
-	res.SetHeader("Content-Type", "application/octet-stream")
+	_ = res.SetHeader("Content-Type", "application/octet-stream")
 	return res
 }
 
@@ -62,4 +62,13 @@ func delayHandler(r *rhttp.Request) *rhttp.Response {
 		payload = build.BuildWriteData(r)
 	}
 	return rhttp.ResponseJSON(200, payload)
+}
+
+func dripHandler(r *rhttp.Request) *rhttp.Response {
+	duration, delay, numbytes, statusCode := getDripParams(r)
+	time.Sleep(time.Second * time.Duration(delay))
+	dr := newDripReader(numbytes, duration)
+	res := rhttp.NewChunkedResponse(statusCode, dr)
+	_ = res.SetHeader("Content-Type", "application/octet-stream")
+	return res
 }

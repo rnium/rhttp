@@ -412,6 +412,52 @@ paths:
             application/json:
               schema:
                 type: object
+  /drip:
+    get:
+      summary: Drip data over a duration after an optional initial delay
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: duration
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: float
+            minimum: 1
+          description: Total duration in seconds to drip the data
+        - name: numbytes
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+          description: Total number of bytes to drip
+        - name: delay
+          in: query
+          schema:
+            type: integer
+            format: float
+            minimum: 0
+          description: Initial delay in seconds before starting to drip data        
+        - name: code
+          in: query
+          default: 200
+          schema:
+            type: integer
+            format: int32
+            minimum: 100
+            maximum: 599
+          description: HTTP status code to return 
+      responses:
+        "200":
+          description: Dripped data response
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary 
   /image:
     get:
       summary: Returns an image response
