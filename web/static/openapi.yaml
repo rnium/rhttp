@@ -306,6 +306,112 @@ paths:
               schema:
                 type: string
                 format: binary
+  /delay/{delay}:
+    get:
+      summary: Delays responding for a specified number of seconds (Max 10 seconds)
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: delay
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10
+          description: Number of seconds to delay the response (0-10)
+      responses:
+        "200":
+          description: Delayed response
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      summary: Delays responding for a specified number of seconds (Max 10 seconds)
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: delay
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10
+          description: Number of seconds to delay the response (0-10)
+      responses:
+        "200":
+          description: Delayed response
+          content:
+            application/json:
+              schema:
+                type: object
+    put:
+      summary: Delays responding for a specified number of seconds (Max 10 seconds)
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: delay
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10
+          description: Number of seconds to delay the response (0-10)
+      responses:
+        "200":
+          description: Delayed response
+          content:
+            application/json:
+              schema:
+                type: object
+    patch:
+      summary: Delays responding for a specified number of seconds (Max 10 seconds)
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: delay
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10
+          description: Number of seconds to delay the response (0-10)
+      responses:
+        "200":
+          description: Delayed response
+          content:
+            application/json:
+              schema:
+                type: object
+    delete:
+      summary: Delays responding for a specified number of seconds (Max 10 seconds)
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: delay
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10
+          description: Number of seconds to delay the response (0-10)
+      responses:
+        "200":
+          description: Delayed response
+          content:
+            application/json:
+              schema:
+                type: object
   /image:
     get:
       summary: Returns an image response

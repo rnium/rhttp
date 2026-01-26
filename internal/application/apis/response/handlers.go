@@ -3,6 +3,7 @@ package response
 import (
 	"fmt"
 
+	"github.com/rnium/rhttp/internal/build"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
@@ -26,7 +27,7 @@ func cache(r *rhttp.Request) *rhttp.Response {
 		statusCode = 304
 		payload = nil
 	} else {
-		payload = buildReadData(r)
+		payload = build.BuildReadData(r)
 	}
 	return statusResponse(statusCode, payload, "")
 }
@@ -39,7 +40,7 @@ func setCacheCtrl(r *rhttp.Request) *rhttp.Response {
 		}
 		return rhttp.ResponseJSON(400, payload)
 	}
-	payload := buildReadData(r)
+	payload := build.BuildReadData(r)
 	res := rhttp.ResponseJSON(200, payload)
 	_ = res.SetHeader("cache-control", fmt.Sprintf("public, max-age=%s", value))
 	return res
@@ -51,8 +52,8 @@ func etagHandler(r *rhttp.Request) *rhttp.Response {
 		etag = "{etag}"
 	}
 
-	statusCode := 200 
-	var payload any = buildReadData(r)
+	statusCode := 200
+	var payload any = build.BuildReadData(r)
 
 	ifNoneMatch, ok := r.Headers.Get("if-none-match")
 	if ok {
@@ -71,7 +72,6 @@ func etagHandler(r *rhttp.Request) *rhttp.Response {
 	}
 	return statusResponse(statusCode, payload, etag)
 }
-
 
 func responseHeaders(r *rhttp.Request) *rhttp.Response {
 	resData := make(map[string]string)

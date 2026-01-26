@@ -4,7 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/rnium/rhttp/internal/build"
+	"github.com/rnium/rhttp/internal/logic"
 	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
@@ -25,7 +28,7 @@ func decodeBase64Handler(r *rhttp.Request) *rhttp.Response {
 
 func uuidGenHandler(_ *rhttp.Request) *rhttp.Response {
 	uid := buildUUID()
-	data := map[string]string {
+	data := map[string]string{
 		"uuid": uid,
 	}
 	return rhttp.ResponseJSON(200, data)
@@ -34,7 +37,7 @@ func uuidGenHandler(_ *rhttp.Request) *rhttp.Response {
 func bytesHandler(r *rhttp.Request) *rhttp.Response {
 	value, _ := r.Param("n")
 	n, err := strconv.Atoi(value)
-	if err != nil  {
+	if err != nil {
 		rhttp.ResponseJSON(200, "expected value to be integer")
 	}
 	n = min(n, 102400)
@@ -44,10 +47,19 @@ func bytesHandler(r *rhttp.Request) *rhttp.Response {
 	return res
 }
 
-// func delayHandler(r *rhttp.Request) *rhttp.Response {
-// 	value, _ := r.Param("delay")
-// 	delay, err := strconv.Atoi(value)
-// 	if err != nil  {
-// 		rhttp.ResponseJSON(200, "expected value to be integer")
-// 	}
-// }
+func delayHandler(r *rhttp.Request) *rhttp.Response {
+	value, _ := r.Param("delay")
+	delay, err := strconv.Atoi(value)
+	if err != nil {
+		rhttp.ResponseJSON(200, "expected value to be integer")
+	}
+	delay = min(delay, 10)
+	time.Sleep(time.Second * time.Duration(delay))
+	var payload any
+	if logic.IsReadMethod(r.RequestLine.Method) {
+		payload = build.BuildReadData(r)
+	} else {
+		payload = build.BuildWriteData(r)
+	}
+	return rhttp.ResponseJSON(200, payload)
+}
