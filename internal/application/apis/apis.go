@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"github.com/rnium/rhttp/internal/application/apis/cookies"
 	"github.com/rnium/rhttp/internal/application/apis/dynamicdata"
 	"github.com/rnium/rhttp/internal/application/apis/images"
 	"github.com/rnium/rhttp/internal/application/apis/methods"
@@ -15,4 +16,5 @@ func RegisterRoutes(r *rhttp.Router) {
 	response.Register(r)
 	dynamicdata.Register(r)
 	images.Register(r)
+	cookies.Register(r)
 }

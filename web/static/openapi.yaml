@@ -19,6 +19,8 @@ tags:
     description: Generate random and dynamic data
   - name: Images
     description: Endpoints returning image data
+  - name: Cookies
+    description: Create, read and delete cookies
 
 paths:
   /get:
@@ -477,6 +479,46 @@ paths:
             application/json:
               schema:
                 type: object
+  /cookies:
+    get:
+      summary: Returns the cookies sent in the request
+      description: Returns all cookies received in the request
+      tags:
+        - Cookies
+      responses:
+        "200":
+          description: Cookies received
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                cookies:
+                  sessionid: "abc123"
+                  theme: "dark"
+  /cookies/set:
+    get:
+      summary: Sets cookie(s) via query parameters
+      description: Sets one or more cookies based on query parameters
+      tags:
+        - Cookies
+      parameters:
+        - name: freeform
+          in: query
+          schema:
+            type: string
+          description: Cookie to set
+      responses:
+        "200":
+          description: Cookies set
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                cookies:
+                  sessionid: "abc123"
+                  theme: "dark"
   /image:
     get:
       summary: Returns an image response
