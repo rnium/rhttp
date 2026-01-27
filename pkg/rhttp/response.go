@@ -27,6 +27,7 @@ var nonEditableResponseHeaders = []string{
 type Response struct {
 	StatusCode int
 	headers    *Headers
+	cookies    []*Cookie
 	body       []byte
 	reader     io.Reader // If reader is set response will be chunked
 	finished   bool
@@ -83,6 +84,10 @@ func (r *Response) SetHeader(name, value string) error {
 	return err
 }
 
+func (r *Response) SetCookie(c *Cookie) {
+	r.cookies = append(r.cookies, c)
+}
+
 func writeStatusLine(conn io.Writer, StatusCode int, request *Request) (int, error) {
 	statusMsg, ok := statusMessage[StatusCode]
 	var statusLine string
@@ -94,11 +99,16 @@ func writeStatusLine(conn io.Writer, StatusCode int, request *Request) (int, err
 	return conn.Write([]byte(statusLine))
 }
 
-func writeHeaders(conn io.Writer, headers *Headers) (int, error) {
+func writeHeaders(conn io.Writer, headers *Headers, cookies []*Cookie) (int, error) {
 	var headers_payload []byte
+	// setting headers
 	headers.ForEach(func(name, value string) {
 		headers_payload = fmt.Appendf(headers_payload, "%s: %s%s", name, value, CRLF)
 	})
+	// setting cookies
+	for _, c := range cookies {
+		headers_payload = fmt.Appendf(headers_payload, "%s: %s%s", "Set-Cookie", c.String(), CRLF)
+	}
 	headers_payload = fmt.Appendf(headers_payload, "%s", CRLF)
 	return conn.Write(headers_payload)
 }
@@ -130,7 +140,7 @@ func (res *Response) writeResponse(conn io.Writer, request *Request) (n int, err
 	n += n_statusline
 
 	// Write Headers
-	n_fieldline, err := writeHeaders(conn, res.headers)
+	n_fieldline, err := writeHeaders(conn, res.headers, res.cookies)
 	if err != nil {
 		return n, err
 	}
@@ -191,7 +201,7 @@ func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
 	digest := sha256.Sum256(body)
 	_ = trailers.Set("x-content-sha256", hex.EncodeToString(digest[:]))
 	_ = trailers.Set("x-content-length", fmt.Sprint(len(body)))
-	n_trailer, err := writeHeaders(conn, trailers)
+	n_trailer, err := writeHeaders(conn, trailers, nil)
 	if err != nil {
 		return n, err
 	}
