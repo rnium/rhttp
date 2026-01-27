@@ -25,16 +25,16 @@ func buildUUID() string {
 }
 
 type dripReader struct {
-	interval int
+	interval time.Duration
 	numBytes int
 	count    int
 }
 
 func newDripReader(numbytes int, duration float64) *dripReader {
-	interval := duration/float64(numbytes) * 1000
+	interval := duration / float64(numbytes) * 1000
 	return &dripReader{
 		numBytes: numbytes,
-		interval: int(interval),
+		interval: time.Millisecond * time.Duration(interval),
 	}
 }
 
@@ -44,6 +44,6 @@ func (dr *dripReader) Read(p []byte) (int, error) {
 	}
 	n := copy(p, []byte{'*'})
 	dr.count += n
-	time.Sleep(time.Millisecond * time.Duration(dr.interval))
+	time.Sleep(dr.interval)
 	return n, nil
 }
