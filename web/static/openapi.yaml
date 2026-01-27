@@ -457,7 +457,26 @@ paths:
             application/octet-stream:
               schema:
                 type: string
-                format: binary 
+                format: binary
+  /stream/{n}:
+    get:
+      summary: Streams n JSON responses
+      tags:
+        - Dynamic Data
+      parameters:
+        - name: n
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Number of JSON ressponses to stream (with 100ms delay between each)
+      responses:
+        "200":
+          description: Streamed JSON responses
+          content:
+            application/json:
+              schema:
+                type: object
   /image:
     get:
       summary: Returns an image response

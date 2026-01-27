@@ -2,9 +2,13 @@ package dynamicdata
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/rnium/rhttp/internal/build"
+	"github.com/rnium/rhttp/pkg/rhttp"
 )
 
 func nRandomBytes(n int) []byte {
@@ -45,5 +49,30 @@ func (dr *dripReader) Read(p []byte) (int, error) {
 	n := copy(p, []byte{'*'})
 	dr.count += n
 	time.Sleep(dr.interval)
+	return n, nil
+}
+
+type chunkedReader struct {
+	numStreams int
+	count      int
+	rd         *build.ReadResponseData
+}
+
+func newChunkedReader(num int, req *rhttp.Request) *chunkedReader {
+	return &chunkedReader{
+		numStreams: num,
+		count: 0,
+		rd: build.BuildReadData(req),
+	}
+}
+
+func (cr *chunkedReader) Read(p []byte) (int, error) {
+	if cr.count >= cr.numStreams {
+		return 0, io.EOF
+	}
+	data, _ := json.Marshal(cr.rd)
+	n := copy(p, data)
+	cr.count += 1
+	time.Sleep(time.Millisecond * 100)
 	return n, nil
 }

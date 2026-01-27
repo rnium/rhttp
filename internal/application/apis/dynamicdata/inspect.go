@@ -20,3 +20,9 @@ func getDripParams(r *rhttp.Request) (duration, delay float64, numbytes, statusC
 	}
 	return
 }
+
+func nParam(r *rhttp.Request) int {
+	nParam, _ := r.Param("n")
+	n, _ := strconv.Atoi(nParam)
+	return n
+}

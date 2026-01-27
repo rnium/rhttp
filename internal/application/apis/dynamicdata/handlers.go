@@ -72,3 +72,11 @@ func dripHandler(r *rhttp.Request) *rhttp.Response {
 	_ = res.SetHeader("Content-Type", "application/octet-stream")
 	return res
 }
+
+func streamHandler(r *rhttp.Request) *rhttp.Response {
+	n := nParam(r)
+	cr := newChunkedReader(n, r)
+	res := rhttp.NewChunkedResponse(200, cr)
+	_ = res.SetHeader("Content-Type", "application/json")
+	return res
+}
