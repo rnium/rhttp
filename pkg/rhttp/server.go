@@ -7,6 +7,7 @@ import (
 	"log"
 	"log/slog"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -52,29 +53,41 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 		conn.Close()
 		s.wg.Done()
 	}()
-	req, err := getRequest(conn)
-	if err != nil {
-		fmt.Println(err)
-		return
+
+	for {
+		req, err := getRequest(conn)
+		if err != nil {
+			if err != io.EOF {
+				fmt.Println(err)
+			}
+			return
+		}
+
+		handler := s.router.getHandler(req)
+		res, err := s.runHandler(handler, req)
+		if err != nil {
+			res = response500(err)
+		}
+		_, err = res.writeResponse(conn, req)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		slog.Info(
+			fmt.Sprintf(
+				"%d %s %s\n",
+				res.StatusCode,
+				req.RequestLine.Method,
+				req.RequestLine.Target,
+			),
+		)
+
+		connHeader, ok := req.Headers.Get("connection")
+		if ok && strings.EqualFold(connHeader, "close") {
+			break
+		}
 	}
-	handler := s.router.getHandler(req)
-	res, err := s.runHandler(handler, req)
-	if err != nil {
-		res = response500(err)
-	}
-	_, err = res.writeResponse(conn, req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	slog.Info(
-		fmt.Sprintf(
-			"%d %s %s\n",
-			res.StatusCode,
-			req.RequestLine.Method,
-			req.RequestLine.Target,
-		),
-	)
 }
 
 func (s *Server) acceptConnections() {
