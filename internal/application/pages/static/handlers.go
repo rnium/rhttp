@@ -13,5 +13,7 @@ func webStatic(r *rhttp.Request) *rhttp.Response {
 	cwd, _ := os.Getwd()
 	fullpath := filepath.Join(cwd, "web/static", filename)
 
-	return respond.FileResponse(fullpath)
+	res := respond.FileResponse(fullpath)
+	_ = res.SetHeader("cache-control", "public, max-age=315360000, immutable")
+	return res
 }

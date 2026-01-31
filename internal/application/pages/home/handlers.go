@@ -6,12 +6,19 @@ import (
 )
 
 func healthCheck(r *rhttp.Request) *rhttp.Response {
-	p := []byte("<h1>Everything working fine</h1>")
-	res := rhttp.NewResponse(rhttp.StatusOK, p)
-	_ = res.SetHeader("content-type", "text/html")
-	return res
+	return rhttp.ResponseJSON(
+		200,
+		map[string]any{
+			"success": true,
+			"message": "Everything working fine",
+		},
+	)
 }
 
 func index(r *rhttp.Request) *rhttp.Response {
 	return respond.FileResponse("./web/templates/index.html")
+}
+
+func schema(r *rhttp.Request) *rhttp.Response {
+	return respond.FileResponse("./web/openapi.yaml")
 }

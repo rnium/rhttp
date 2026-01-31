@@ -8,9 +8,6 @@ func Register(r *rhttp.Router) {
 	r.Get("/bytes/:n", bytesHandler)
 	r.Get("/delay/:delay", delayHandler)
 	r.Post("/delay/:delay", delayHandler)
-	r.Put("/delay/:delay", delayHandler)
-	r.Patch("/delay/:delay", delayHandler)
-	r.Delete("/delay/:delay", delayHandler)
 	r.Get("/drip", dripHandler)
 	r.Get("/stream/:n", streamHandler)
 }

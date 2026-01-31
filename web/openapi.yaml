@@ -350,70 +350,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-    put:
-      summary: Delays responding for a specified number of seconds (Max 10 seconds)
-      tags:
-        - Dynamic Data
-      parameters:
-        - name: delay
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-            maximum: 10
-          description: Number of seconds to delay the response (0-10)
-      responses:
-        "200":
-          description: Delayed response
-          content:
-            application/json:
-              schema:
-                type: object
-    patch:
-      summary: Delays responding for a specified number of seconds (Max 10 seconds)
-      tags:
-        - Dynamic Data
-      parameters:
-        - name: delay
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-            maximum: 10
-          description: Number of seconds to delay the response (0-10)
-      responses:
-        "200":
-          description: Delayed response
-          content:
-            application/json:
-              schema:
-                type: object
-    delete:
-      summary: Delays responding for a specified number of seconds (Max 10 seconds)
-      tags:
-        - Dynamic Data
-      parameters:
-        - name: delay
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-            maximum: 10
-          description: Number of seconds to delay the response (0-10)
-      responses:
-        "200":
-          description: Delayed response
-          content:
-            application/json:
-              schema:
-                type: object
+                type: object    
   /drip:
     get:
       summary: Drip data over a duration after an optional initial delay
@@ -585,14 +522,6 @@ paths:
       responses:
         "200":
           description: A JPEG image
-  /image/png:
-    get:
-      summary: Returns a PNG image
-      tags:
-        - Images
-      responses:
-        "200":
-          description: A PNG image
   /image/webp:
     get:
       summary: Returns a WEBP image
@@ -601,14 +530,6 @@ paths:
       responses:
         "200":
           description: A WEBP image
-  /image/svg:
-    get:  
-      summary: Returns an SVG image
-      tags:
-        - Images
-      responses:
-        "200":
-          description: An SVG image
   /image/gif:
     get:
       summary: Returns a GIF image
