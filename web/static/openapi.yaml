@@ -519,6 +519,29 @@ paths:
                 cookies:
                   sessionid: "abc123"
                   theme: "dark"
+  /cookies/delete:
+    get:
+      summary: Deletes cookie(s) via query parameters
+      description: Deletes one or more cookies based on query parameters
+      tags:
+        - Cookies
+      parameters:
+        - name: freeform
+          in: query
+          schema:
+            type: string
+          description: Cookie to delete
+      responses:
+        "200":
+          description: Redirected to cookie list after deletion
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                cookies:
+                  theme: "dark"
+
   /image:
     get:
       summary: Returns an image response
