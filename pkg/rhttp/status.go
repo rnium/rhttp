@@ -9,6 +9,7 @@ const (
 
 	StatusMultipleChoices  = 300 // RFC 9110, 15.4.1
 	StatusMovedPermanently = 301 // RFC 9110, 15.4.2
+	StatusFound            = 302 // RFC 9110, 15.4.3
 
 	StatusBadRequest       = 400 // RFC 9110, 15.5.1
 	StatusUnauthorized     = 401 // RFC 9110, 15.5.2
@@ -35,6 +36,7 @@ var statusMessage = map[int]string{
 
 	StatusMultipleChoices:  "Multiple Choices",
 	StatusMovedPermanently: "Moved Permanently",
+	StatusFound:            "Found",
 
 	StatusBadRequest:       "Bad Request",
 	StatusUnauthorized:     "Unauthorized",

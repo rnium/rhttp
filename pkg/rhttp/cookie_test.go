@@ -31,4 +31,10 @@ func TestCookieString(t *testing.T) {
 		Expires: expiry,
 	}
 	assert.Equal(t, "free=form; Expires=Tue, 01 Jan 2030 12:00:00 GMT; Path=/", cookie.String())
+	cookie = &Cookie{
+		Name:    "free",
+		Value:   "cookies",
+		MaxAge: "12300",
+	}
+	assert.Equal(t, "free=cookies; Path=/; Max-Age=12300", cookie.String())
 }

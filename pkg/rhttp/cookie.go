@@ -2,6 +2,7 @@ package rhttp
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,7 +14,7 @@ type Cookie struct {
 	HttpOnly bool
 	Secure   bool
 	Expires  time.Time
-	MaxAge   int
+	MaxAge   string
 }
 
 func formatField(name string, value any) string {
@@ -50,7 +51,8 @@ func (c *Cookie) String() string {
 		parts = append(parts, formatField("Secure", c.Secure))
 	}
 
-	if c.MaxAge != 0 {
+	_, noMaxage := strconv.Atoi(c.MaxAge)
+	if noMaxage == nil {
 		parts = append(parts, formatField("Max-Age", c.MaxAge))
 	}
 

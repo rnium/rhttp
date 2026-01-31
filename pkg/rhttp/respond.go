@@ -21,7 +21,7 @@ func ResponseJSON(status int, payload any) *Response {
 	return res
 }
 
-var ErrorResponseJSON = func(status int, messages ...string) *Response {
+func ErrorResponseJSON(status int, messages ...string) *Response {
 	var msg string
 	if len(messages) > 0 {
 		msg = strings.Join(messages, ", ")
@@ -36,6 +36,16 @@ var ErrorResponseJSON = func(status int, messages ...string) *Response {
 	)
 }
 
-var response500 = func(err error) *Response {
+func response500(err error) *Response {
 	return ErrorResponseJSON(500, err.Error())
+}
+
+func Redirect(to string, parmanent bool) *Response {
+	statusCode := 302
+	if parmanent {
+		statusCode = 301
+	}
+	res := ResponseJSON(statusCode, "")
+	_ = res.SetHeader("Location", to)
+	return res
 }
