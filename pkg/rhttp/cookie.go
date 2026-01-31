@@ -3,6 +3,7 @@ package rhttp
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Cookie struct {
@@ -11,6 +12,7 @@ type Cookie struct {
 	Path     string
 	HttpOnly bool
 	Secure   bool
+	Expires  time.Time
 	MaxAge   int
 }
 
@@ -26,6 +28,14 @@ func (c *Cookie) String() string {
 	parts := []string{
 		formatField(c.Name, c.Value),
 	}
+
+	if !c.Expires.IsZero() {
+		parts = append(parts, formatField(
+			"Expires",
+			c.Expires.Format(time.RFC1123),
+		))
+	}
+
 	if c.Path == "" {
 		parts = append(parts, formatField("Path", "/"))
 	} else {
