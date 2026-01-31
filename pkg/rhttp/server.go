@@ -11,11 +11,21 @@ import (
 	"sync"
 )
 
+type serverStatus int8
+
+const (
+	serverIdle serverStatus = iota
+	serverRunning
+	serverClosed
+)
+
 type Server struct {
+	status    serverStatus
 	listener  net.Listener
 	router    *Router
 	wg        sync.WaitGroup
 	closeOnce sync.Once
+	sigQuit   chan bool
 }
 
 func (s *Server) Close() error {
@@ -24,7 +34,9 @@ func (s *Server) Close() error {
 		if s.listener != nil {
 			err = s.listener.Close()
 		}
+		close(s.sigQuit)
 		s.wg.Wait()
+		s.status = serverClosed
 	})
 	return err
 }
@@ -48,19 +60,11 @@ func (s *Server) runHandler(handler Handler, req *Request) (res *Response, err e
 	return
 }
 
-func (s *Server) handleConn(conn io.ReadWriteCloser) {
-	defer func() {
-		conn.Close()
-		s.wg.Done()
-	}()
-
+func (s *Server) runHttpCycle(conn io.ReadWriter, done chan bool) {
 	for {
 		req, err := getRequest(conn)
 		if err != nil {
-			if err != io.EOF {
-				fmt.Println(err)
-			}
-			return
+			break
 		}
 
 		handler := s.router.getHandler(req)
@@ -70,8 +74,7 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 		}
 		_, err = res.writeResponse(conn, req)
 		if err != nil {
-			fmt.Println(err)
-			return
+			break
 		}
 
 		slog.Info(
@@ -88,6 +91,22 @@ func (s *Server) handleConn(conn io.ReadWriteCloser) {
 			break
 		}
 	}
+	done <- true
+}
+
+func (s *Server) handleConn(conn io.ReadWriteCloser) {
+	defer func() {
+		conn.Close()
+		s.wg.Done()
+	}()
+
+	done := make(chan bool)
+	go s.runHttpCycle(conn, done)
+
+	select {
+	case <-s.sigQuit:
+	case <-done:
+	}
 }
 
 func (s *Server) acceptConnections() {
@@ -101,17 +120,25 @@ func (s *Server) acceptConnections() {
 	}
 }
 
-func Serve(port uint16, router *Router) *Server {
+func NewServer(router *Router) *Server {
+	return &Server{
+		status:  serverIdle,
+		router:  router,
+		sigQuit: make(chan bool),
+	}
+}
+
+func (s *Server) Start(port uint16) {
+	if s.status == serverRunning {
+		log.Fatalln("Server is already running")
+	}
+	s.status = serverRunning
 	fmt.Println("Starting Server...")
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("Cannot initiate listener on port %d\n", port)
 	}
-	server := &Server{
-		listener: listener,
-		router:   router,
-	}
-	go server.acceptConnections()
+	s.listener = listener
+	go s.acceptConnections()
 	fmt.Printf("Listening for tcp connections on port %d\n", port)
-	return server
 }
