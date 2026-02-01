@@ -14,7 +14,7 @@ func Start(port uint16) {
 	server := rhttp.NewServer(router)
 	server.Start(port)
 	defer func() {
-		fmt.Printf("\nShutting down server instance at %v", &server)
+		fmt.Printf("\nShutting down server instance at %v\n", &server)
 		err := server.Close()
 		if err != nil {
 			fmt.Printf("Error while shutting down server %v\n", err)

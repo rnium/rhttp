@@ -5,8 +5,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o rhttpbin ./cmd/rhttpbin
 
 # runtime
 FROM scratch
-COPY --from=builder /app/rhttpbin /app/rhttpbin
-COPY --from=builder /app/web ./web
+COPY --from=builder /app/rhttpbin /rhttpbin
+COPY --from=builder /app/web /web
 
-EXPOSE 8000
-CMD ["/app/rhttpbin"]
+ENV GO_PORT=80
+EXPOSE 80
+
+CMD ["/rhttpbin"]
