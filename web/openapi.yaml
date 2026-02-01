@@ -4,10 +4,10 @@ info:
   summary: A httpbin clone in Custom Go HTTP Server
   contact:
     name: MSI Rony
-    email: abrony@gmail.com
+    email: contact@sirony.site
     url: https://sirony.site
   version: 1.0.0
-  description: This is a simple httpbin clone implemented in a custom Go HTTP server. It demonstrates various HTTP features and their responses.
+  description: This application is built on a custom Go HTTP server implementation. It replicates the functionality of httpbin.org for testing HTTP libraries and applications.
 tags:
   - name: HTTP Methods
     description: Endpoints demonstrating various HTTP methods
