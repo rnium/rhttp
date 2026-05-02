@@ -1,6 +1,7 @@
 package rhttp
 
 import (
+	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -31,6 +32,21 @@ type Response struct {
 	body       []byte
 	reader     io.Reader // If reader is set response will be chunked
 	finished   bool
+}
+
+type countingWriter struct {
+	count int
+	err   error
+	w     io.Writer
+}
+
+func (cw *countingWriter) Write(p []byte) (n int, err error) {
+	n, err = cw.w.Write(p)
+	cw.count += n
+	if cw.err == nil {
+		cw.err = err
+	}
+	return
 }
 
 func defaultResponseHeaders() *Headers {
@@ -100,17 +116,29 @@ func writeStatusLine(conn io.Writer, StatusCode int, request *Request) (int, err
 }
 
 func writeHeaders(conn io.Writer, headers *Headers, cookies []*Cookie) (int, error) {
-	var headers_payload []byte
+	cw := &countingWriter{w: conn}
+	buf := bufio.NewWriter(cw)
+
 	// setting headers
 	headers.ForEach(func(name, value string) {
-		headers_payload = fmt.Appendf(headers_payload, "%s: %s%s", name, value, CRLF)
+		buf.WriteString(name)
+		buf.WriteString(": ")
+		buf.WriteString(value)
+		buf.WriteString(CRLF)
 	})
 	// setting cookies
 	for _, c := range cookies {
-		headers_payload = fmt.Appendf(headers_payload, "%s: %s%s", "Set-Cookie", c.String(), CRLF)
+		buf.WriteString("Set-Cookie: ")
+		buf.WriteString(c.String())
+		buf.WriteString(CRLF)
 	}
-	headers_payload = fmt.Appendf(headers_payload, "%s", CRLF)
-	return conn.Write(headers_payload)
+	buf.WriteString(CRLF)
+	err := buf.Flush()
+	if err == nil {
+		err = cw.err
+	}
+	n := cw.count
+	return n, err
 }
 
 func writeBody(conn io.Writer, p []byte) (int, error) {
