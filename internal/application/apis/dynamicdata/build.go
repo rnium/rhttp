@@ -61,8 +61,8 @@ type chunkedReader struct {
 func newChunkedReader(num int, req *rhttp.Request) *chunkedReader {
 	return &chunkedReader{
 		numStreams: num,
-		count: 0,
-		rd: build.BuildReadData(req),
+		count:      0,
+		rd:         build.BuildReadData(req),
 	}
 }
 

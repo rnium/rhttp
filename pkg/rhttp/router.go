@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strings"
 	"unicode"
-
 )
 
 const MethodGet = "GET" // methods are case sensitive, RFC 9110#section-9.1-5
