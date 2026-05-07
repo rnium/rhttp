@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type ParserState int8
@@ -193,11 +194,22 @@ outer:
 const initialReadBufferSize = 1024
 const maxReadBufferSize = 1 << 20
 
+var bufferPool = sync.Pool{
+	New: func() any {
+		return make([]byte, initialReadBufferSize)
+	},
+}
+
 func getRequest(conn io.Reader) (*Request, error) {
 	netConn, _ := conn.(net.Conn)
 	request := newRequest(&netConn)
-	buf := make([]byte, initialReadBufferSize)
+	buf, _ := bufferPool.Get().([]byte)
+	defer func() {
+		clear(buf)
+		bufferPool.Put(buf)
+	}()
 	bufIdx := 0
+
 	for !request.done() {
 		if bufIdx >= len(buf) {
 			if len(buf) >= maxReadBufferSize {
