@@ -190,12 +190,24 @@ outer:
 	return read, err
 }
 
+const initialReadBufferSize = 1024
+const maxReadBufferSize = 1 << 20
+
 func getRequest(conn io.Reader) (*Request, error) {
 	netConn, _ := conn.(net.Conn)
 	request := newRequest(&netConn)
-	buf := make([]byte, 1000)
+	buf := make([]byte, initialReadBufferSize)
 	bufIdx := 0
 	for !request.done() {
+		if bufIdx >= len(buf) {
+			if len(buf) >= maxReadBufferSize {
+				return nil, ErrRequestTooLarge
+			}
+			nextSize := min(len(buf)*2, maxReadBufferSize)
+			newBuf := make([]byte, nextSize)
+			copy(newBuf, buf[:bufIdx])
+			buf = newBuf
+		}
 		n, err := conn.Read(buf[bufIdx:])
 		if err != nil {
 			return nil, err
@@ -204,7 +216,9 @@ func getRequest(conn io.Reader) (*Request, error) {
 		if err != nil {
 			return nil, err
 		}
-		copy(buf, buf[n_parsed:bufIdx+n])
+		if n_parsed > 0 {
+			copy(buf, buf[n_parsed:bufIdx+n])
+		}
 		bufIdx = bufIdx + n - n_parsed
 	}
 	return request, nil

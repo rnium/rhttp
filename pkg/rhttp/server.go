@@ -9,6 +9,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"time"
 )
 
 type serverStatus int8
@@ -60,8 +61,13 @@ func (s *Server) runHandler(handler Handler, req *Request) (res *Response, err e
 	return
 }
 
+const ideleTime = time.Second * 60
+
 func (s *Server) runHttpCycle(conn io.ReadWriter, done chan bool) {
 	for {
+		if tc, ok := conn.(net.Conn); ok {
+			tc.SetReadDeadline(time.Now().Add(ideleTime))
+		}
 		req, err := getRequest(conn)
 		if err != nil {
 			break

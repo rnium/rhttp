@@ -18,6 +18,7 @@ var ErrNonEditableHeader = errors.New("this header is not editable")
 var ErrMalformedRequestLine = errors.New("malformed request line")
 var ErrMalformedFieldLine = errors.New("malformed field line")
 var ErrMalformedFieldValue = errors.New("malformed field value")
+var ErrRequestTooLarge = errors.New("request is too large")
 
 // Response
 var ErrResponseClosed = errors.New("response closed")
