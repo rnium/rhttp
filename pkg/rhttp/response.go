@@ -8,6 +8,7 @@ import (
 	"io"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -191,18 +192,26 @@ func (res *Response) writeResponse(conn io.Writer, request *Request) (n int, err
 	return
 }
 
+var responseBufferPool = sync.Pool{
+	New: func() any {
+		return make([]byte, 8192)
+	},
+}
+
 func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
-	var body []byte
+	buf, _ := responseBufferPool.Get().([]byte)
+	defer func() {
+		responseBufferPool.Put(buf)
+	}()
+	hasher := sha256.New()
+	totalLen := 0
 	var errored bool
 	for {
-		buf := make([]byte, 512)
-		n_read, err := res.reader.Read(buf)
-		if err != nil {
-			break
-		}
+		n_read, readErr := res.reader.Read(buf)
 		if n_read > 0 {
 			chunk := buf[:n_read]
-			body = append(body, chunk...)
+			hasher.Write(chunk)
+			totalLen += n_read
 			n_body, err := writeBody(conn, fmt.Appendf(nil, "%x%s", n_read, CRLF))
 			if err != nil {
 				errored = true
@@ -216,6 +225,9 @@ func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
 			}
 			n += n_body
 		}
+		if readErr != nil {
+			break
+		}
 	}
 	if errored {
 		return
@@ -226,9 +238,9 @@ func (res *Response) writeChunkedBody(conn io.Writer) (n int, err error) {
 	}
 	n += n_body
 	trailers := newHeaders()
-	digest := sha256.Sum256(body)
-	_ = trailers.Set("x-content-sha256", hex.EncodeToString(digest[:]))
-	_ = trailers.Set("x-content-length", fmt.Sprint(len(body)))
+	digest := hasher.Sum(nil)
+	_ = trailers.Set("x-content-sha256", hex.EncodeToString(digest))
+	_ = trailers.Set("x-content-length", fmt.Sprint(totalLen))
 	n_trailer, err := writeHeaders(conn, trailers, nil)
 	if err != nil {
 		return n, err
