@@ -8,7 +8,7 @@ FROM scratch
 COPY --from=builder /app/rhttpbin /rhttpbin
 COPY --from=builder /app/web /web
 
-ENV GO_PORT=80
-EXPOSE 80
+ENV GO_PORT=8000
+EXPOSE 8000
 
 CMD ["/rhttpbin"]
