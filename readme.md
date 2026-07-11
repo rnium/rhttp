@@ -1,7 +1,5 @@
 # rhttp
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/rnium/rhttp)](https://goreportcard.com/report/github.com/rnium/rhttp)
-
 `rhttp` is a minimal HTTP/1.1 server framework built directly over TCP in Go, with no dependency on `net/http`. It implements a focused subset of [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110) (HTTP Semantics) and [RFC 9112](https://www.rfc-editor.org/rfc/rfc9112) (HTTP/1.1 Message Syntax).
 
 The goal is clarity over completeness — every layer from TCP connection acceptance to response serialization is explicit and readable.
